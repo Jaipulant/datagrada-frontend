@@ -186,7 +186,7 @@
         window.location.href = 'index.html';
     } else {
         // Hay token, comprobamos si el backend lo acepta
-        fetch('http://localhost:8080/api/usuarios/me', {
+        fetch('${API_BASE_URL}/api/usuarios/me', {
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + token }
         })
@@ -214,7 +214,7 @@
     });
 
     function cargarTermometro() {
-        fetch('http://localhost:8080/api/estadisticas/termometro', {
+        fetch('${API_BASE_URL}/api/estadisticas/termometro', {
             headers: { 'Authorization': 'Bearer ' + token }
         })
         .then(res => {
@@ -259,7 +259,7 @@
     }
 
     function cargarEquiposParaModal() {
-        fetch('http://localhost:8080/api/equipos', {
+        fetch('${API_BASE_URL}/api/equipos', {
             headers: { 'Authorization': 'Bearer ' + token }
         })
         .then(res => {
@@ -292,7 +292,7 @@
             return;
         }
 
-        fetch(`http://localhost:8080/api/usuarios/me/equipo-favorito/${idEquipo}`, {
+        fetch(`${API_BASE_URL}/api/usuarios/me/equipo-favorito/${idEquipo}`, {
             method: 'PUT',
             headers: { 'Authorization': 'Bearer ' + token }
         })

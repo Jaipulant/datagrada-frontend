@@ -177,7 +177,7 @@
 
     // --- CARGA DE DATOS (CON TOKEN) ---
     function cargarEquipos() {
-        fetch('http://localhost:8080/api/equipos', {
+        fetch('${API_BASE_URL}/api/equipos', {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
@@ -218,7 +218,7 @@
     }
 
     function cargarCompeticiones() {
-        fetch('http://localhost:8080/api/competiciones', {
+        fetch('${API_BASE_URL}/api/competiciones', {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
@@ -266,7 +266,7 @@
             urlEscudo: urlEscudoInput 
         };
 
-        fetch('http://localhost:8080/api/equipos', {
+        fetch('${API_BASE_URL}/api/equipos', {
             method: 'POST',
             headers: { 
                 'Authorization': 'Bearer ' + token,
@@ -323,7 +323,7 @@
             equipoVisitante: { idEquipos: parseInt(idVisitante) }
         };
 
-        fetch('http://localhost:8080/api/partidos', {
+        fetch('${API_BASE_URL}/api/partidos', {
             method: 'POST',
             headers: { 
                 'Authorization': 'Bearer ' + token,

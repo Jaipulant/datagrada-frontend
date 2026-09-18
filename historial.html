@@ -110,7 +110,7 @@
 
     // --- 1. LLENAR LOS DESPLEGABLES (CON TOKEN) ---
     function cargarFiltros() {
-        fetch('http://localhost:8080/api/competiciones', {
+        fetch('${API_BASE_URL}/api/competiciones', {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
@@ -126,7 +126,7 @@
                 buscadorCompeticionHistorial = new TomSelect("#filtro-competicion", { create: false, sortField: { field: "text" } });
             });
 
-        fetch('http://localhost:8080/api/equipos', {
+        fetch('${API_BASE_URL}/api/equipos', {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
@@ -179,7 +179,7 @@
 
     // --- 3. CARGAR PARTIDOS Y DIBUJAR TABLA (CON TOKEN) ---
     function cargarTodosLosPartidos() {
-        fetch('http://localhost:8080/api/partidos', {
+        fetch('${API_BASE_URL}/api/partidos', {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
@@ -305,7 +305,7 @@
             return;
         }
 
-        fetch(`http://localhost:8080/api/partidos/${id}`, {
+        fetch(`${API_BASE_URL}/api/partidos/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + token }
         })
@@ -348,7 +348,7 @@
             golesVisitante: parseInt(document.getElementById('edit-goles-visitante').value)
         };
 
-        fetch(`http://localhost:8080/api/partidos/${id}`, {
+        fetch(`${API_BASE_URL}/api/partidos/${id}`, {
             method: 'PUT',
             headers: { 
                 'Authorization': 'Bearer ' + token,
