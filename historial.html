@@ -15,12 +15,22 @@
             border: 1px solid #333;
             border-radius: 12px;
         }
-        /* Estilo optimizado para la cabecera móvil para que quepa todo seguido sin saltos raros */
         .header-movil-partido {
             font-size: 0.8rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+        /* Permite que los nombres largos salten de línea elegantemente en móvil sin romper la estructura */
+        .equipo-nombre-movil {
+            font-size: 0.8rem;
+            line-height: 1.1;
+            white-space: normal;
+            word-break: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Máximo 2 líneas para que no crezca demasiado */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -94,7 +104,7 @@
         </div>
     </div>
 
-    <!-- 2. VISTA MÓVIL: Tarjetas optimizadas -->
+    <!-- 2. VISTA MÓVIL: Tarjetas optimizadas con salto de línea en nombres largos -->
     <div class="d-block d-md-none" id="tabla-partidos-movil">
         <!-- Inyectado por JS -->
     </div>
@@ -261,7 +271,7 @@
             `;
             tbodyPc.innerHTML += filaPc;
 
-            // 2. TARJETA MÓVIL: Con cabecera ajustada (header-movil-partido) para que quepa todo en una sola línea limpia
+            // 2. TARJETA MÓVIL: Con nombres largos adaptados para bajar a 2 líneas (equipo-nombre-movil)
             const tarjetaMovil = `
                 <div class="partido-card-movil p-3 mb-3 shadow-sm position-relative">
                     <!-- Botón de opciones arriba a la derecha -->
@@ -274,19 +284,19 @@
                         </ul>
                     </div>
 
-                    <!-- Cabecera ajustada para que quepa en una sola línea -->
+                    <!-- Cabecera ajustada -->
                     <div class="text-center mb-2 pe-4 header-movil-partido">
                         <span class="text-muted">${partido.fecha}</span> • 
                         <span class="text-light fw-bold">${partido.competicion.nombre}</span> 
                         <span class="text-muted">(${textoJornada})</span>
                     </div>
 
-                    <!-- Estructura de columnas fijas -->
+                    <!-- Estructura de columnas fijas con salto de línea natural en nombres -->
                     <div class="d-flex align-items-center justify-content-between gap-2 mt-2">
                         
                         <!-- Columna Local -->
-                        <div class="d-flex align-items-center justify-content-end text-end gap-1" style="flex: 1 1 0; min-width: 0; overflow: hidden;">
-                            <span class="text-light fw-bold text-truncate" style="font-size: 0.82rem;" title="${partido.equipoLocal.nombre}">${partido.equipoLocal.nombre}</span>
+                        <div class="d-flex align-items-center justify-content-end text-end gap-1" style="flex: 1 1 0; min-width: 0;">
+                            <span class="text-light fw-bold equipo-nombre-movil" title="${partido.equipoLocal.nombre}">${partido.equipoLocal.nombre}</span>
                             <img src="${escudoLocal}" alt="Local" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;">
                         </div>
 
@@ -296,9 +306,9 @@
                         </div>
 
                         <!-- Columna Visitante -->
-                        <div class="d-flex align-items-center justify-content-start text-start gap-1" style="flex: 1 1 0; min-width: 0; overflow: hidden;">
+                        <div class="d-flex align-items-center justify-content-start text-start gap-1" style="flex: 1 1 0; min-width: 0;">
                             <img src="${escudoVisitante}" alt="Visitante" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;">
-                            <span class="text-light fw-bold text-truncate" style="font-size: 0.82rem;" title="${partido.equipoVisitante.nombre}">${partido.equipoVisitante.nombre}</span>
+                            <span class="text-light fw-bold equipo-nombre-movil" title="${partido.equipoVisitante.nombre}">${partido.equipoVisitante.nombre}</span>
                         </div>
 
                     </div>
