@@ -8,19 +8,23 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <meta name="referrer" content="no-referrer">
-    <!-- Archivo de configuración con la URL base del servidor -->
     <script src="config.js"></script>
 </head>
 <body>
 
-<!-- Barra de navegación sencilla para moverte entre páginas -->
+<!-- Barra de navegación responsive -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
         <a class="navbar-brand" href="inicio.html">ᯓ⚽️ DataGrada</a>
-        <div class="navbar-nav">
-            <a class="nav-link active" href="historial.html">Historial</a>
-            <a class="nav-link" href="partidonuevo.html">Añadir Partido</a>
-            <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm ms-auto">Cerrar Sesión</button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav ms-auto align-items-lg-center">
+                <a class="nav-link active" href="historial.html">Historial</a>
+                <a class="nav-link" href="partidonuevo.html">Añadir Partido</a>
+                <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm mt-2 mt-lg-0 ms-lg-2">Cerrar Sesión</button>
+            </div>
         </div>
     </div>
 </nav>
@@ -31,34 +35,34 @@
         <span id="contador-partidos" class="badge bg-danger rounded-pill ms-3 fs-6">0</span>
     </h2>
 
-    <!-- Zona de Filtros -->
+    <!-- Zona de Filtros Responsive (g-3 para espacio automático) -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
+            <div class="row g-3">
+                <div class="col-12 col-md-3">
                     <select id="filtro-competicion" class="form-select">
                         <option value="">Todas las competiciones</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <select id="filtro-equipo" class="form-select">
                         <option value="">Cualquier equipo</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <input type="date" id="filtro-fecha" class="form-control">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <button class="btn btn-primary w-100" onclick="aplicarFiltros()">Filtrar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Tabla de Resultados -->
+    <!-- Tabla de Resultados con scroll horizontal automático en móvil -->
     <div class="card shadow">
-        <div class="card-body p-0">
-            <table class="table table-hover table-striped text-center align-middle m-0" style="table-layout: fixed;">
+        <div class="card-body p-0" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="table table-hover table-striped text-center align-middle m-0" style="table-layout: fixed; min-width: 600px;">
                 <thead class="table-dark">
                     <tr>
                         <th style="width: 15%;">Fecha</th>
@@ -70,7 +74,7 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-partidos">
-                    <!-- El contenido se inyecta desde JavaScript -->
+                    <!-- Inyectado por JS -->
                 </tbody>
             </table>
         </div>
@@ -84,13 +88,11 @@
 </div>
 
 <script>
-    // --- SEGURIDAD: COMPROBAR TOKEN AL CARGAR ---
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = 'index.html';
     }
 
-    // Variables globales
     let todosLosPartidos = [];
     let todosLosEquipos = []; 
     let buscadorCompeticionHistorial, buscadorEquipoHistorial;
@@ -107,7 +109,6 @@
         });
     });
 
-    // --- 1. LLENAR LOS DESPLEGABLES (CON TOKEN Y API_BASE_URL) ---
     function cargarFiltros() {
         fetch(`${API_BASE_URL}/api/competiciones`, {
             headers: {
@@ -138,7 +139,6 @@
         });
     }
 
-    // --- 2. LA MAGIA DE LOS EQUIPOS EN CASCADA ---
     function actualizarDesplegableEquipos(idCompeticionSeleccionada) {
         if (idCompeticionSeleccionada === "") {
             dibujarDesplegableEquipos(todosLosEquipos);
@@ -163,19 +163,14 @@
 
     function dibujarDesplegableEquipos(listaEquipos) {
         const selectEq = document.getElementById('filtro-equipo');
-        
         if (buscadorEquipoHistorial) buscadorEquipoHistorial.destroy();
-
         selectEq.innerHTML = '<option value="">Cualquier equipo</option>'; 
-        
         listaEquipos.forEach(eq => {
             selectEq.innerHTML += `<option value="${eq.idEquipos}">${eq.nombre}</option>`;
         });
-
         buscadorEquipoHistorial = new TomSelect("#filtro-equipo", { create: false, sortField: { field: "text" } });
     }
 
-    // --- 3. CARGAR PARTIDOS Y DIBUJAR TABLA ---
     function cargarTodosLosPartidos() {
         fetch(`${API_BASE_URL}/api/partidos`, {
             headers: {
@@ -284,9 +279,7 @@
     }
 
     function borrarPartido(id) {
-        if (!confirm("¿Estás seguro de que quieres borrar este partido? Esta acción no se puede deshacer.")) {
-            return;
-        }
+        if (!confirm("¿Estás seguro de que quieres borrar este partido? Esta acción no se puede deshacer.")) return;
 
         fetch(`${API_BASE_URL}/api/partidos/${id}`, {
             method: 'DELETE',
@@ -364,11 +357,11 @@
                 <form id="form-editar-partido">
                     <input type="hidden" id="edit-id-partido">
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
                             <label class="form-label text-light">Fecha</label>
                             <input type="date" id="edit-fecha" class="form-control" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label text-light">Jornada</label>
                             <input type="text" id="edit-jornada" class="form-control">
                         </div>
