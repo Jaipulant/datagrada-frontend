@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrada | Insertar Partido</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Buscador Inteligente Tom Select -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="inicio.html" style="letter-spacing: 1px;">ᯓ⚽️ DataGrada</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="historial.html">Historial</a>
+            <a class="nav-link active" href="partidonuevo.html">Añadir Partido</a>
+            <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm ms-auto">Cerrar Sesión</button>
+        </div>
+    </div>
+</nav>   
+
+<!-- ========================================== -->
+<!-- PANTALLA PRINCIPAL: INSERTAR PARTIDO      -->
+<!-- ========================================== -->
+<div class="container mt-5">
+    <h2 class="text-center mb-4 titulo-form">⚽ Insertar <span class="resalto">Nuevo Partido</span></h2>
+
+    <div class="card p-4 mx-auto" style="background-color: #262626; border: 1px solid #333; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);">
+        <div class="card-body p-0">
+            <form id="formulario-partido">
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Competición</label>
+                        <select id="select-competicion" class="form-select" required>
+                            <option value="">Cargando competiciones...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Jornada</label>
+                        <input type="text" id="input-jornada" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" id="input-fecha" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="row align-items-center mb-4 text-center mt-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Equipo Local</label>
+                        <div class="input-group">
+                            <select id="select-local" class="form-select" required>
+                                <option value="">Cargando equipos...</option>
+                            </select>
+                            <button class="btn btn-outline-primary fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#modalEquipo">+</button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Goles</label>
+                        <input type="number" id="goles-local" class="form-control text-center fs-5 fw-bold" value="0" min="0" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Goles</label>
+                        <input type="number" id="goles-visitante" class="form-control text-center fs-5 fw-bold" value="0" min="0" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Equipo Visitante</label>
+                        <div class="input-group">
+                            <select id="select-visitante" class="form-select" required>
+                                <option value="">Cargando equipos...</option>
+                            </select>
+                            <button class="btn btn-outline-primary fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#modalEquipo">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-success px-5 py-2 fs-5" onclick="guardarPartido()">Guardar Partido</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: AÑADIR NUEVO EQUIPO (OCULTO)        -->
+<!-- ========================================== -->
+<div class="modal fade" id="modalEquipo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background-color: #262626; border: 1px solid #333; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            
+            <!-- Botón de cerrar (X) arriba a la derecha -->
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body px-5 pb-5 pt-2">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold titulo-form">Nuevo <span class="resalto">Equipo</span></h2>
+                    <p class="text-muted">Añade un nuevo club a la base de datos de DataGrada.</p>
+                </div>
+
+                <div class="row align-items-center">
+                    <!-- Formulario -->
+                    <div class="col-md-7">
+                        <form id="form-nuevo-equipo" onsubmit="guardarNuevoEquipo(event)">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre del Club</label>
+                                <input type="text" class="form-control" id="nombre-equipo" placeholder="Ej: Manchester City..." required>
+                            </div>
+                            
+                            <!-- Nueva fila para País y Estadio -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">País</label>
+                                    <input type="text" class="form-control" id="pais-equipo" placeholder="Ej: Inglaterra" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Estadio</label>
+                                    <input type="text" class="form-control" id="estadio-equipo" placeholder="Ej: Etihad Stadium" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">URL del Escudo (PNG preferible)</label>
+                                <input type="url" class="form-control" id="url-escudo" placeholder="https://ejemplo.com/escudo.png">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fs-5" style="border-radius: 8px;">
+                                Guardar Equipo
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Vista Previa -->
+                    <div class="col-md-5 text-center mt-4 mt-md-0">
+                        <p class="text-muted small fw-bold mb-2" style="letter-spacing: 1px;">VISTA PREVIA</p>
+                        <div class="vista-previa-escudo d-flex justify-content-center align-items-center mx-auto">
+                            <img id="imagen-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2352525b'><path d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 19.93V3.19l7 3.11v4.7c0 4.67-3.13 8.96-7 10.03z'/></svg>" 
+                                 alt="Vista previa" 
+                                 style="width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.4)); transition: all 0.3s ease;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- SCRIPTS DE LÓGICA Y ESTILOS                -->
+<!-- ========================================== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+    // --- SEGURIDAD: COMPROBAR TOKEN AL CARGAR ---
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'index.html';
+    }
+
+    // --- VARIABLES GLOBALES ---
+    let buscadorLocal, buscadorVisitante, buscadorCompeticion;
+    let todosLosEquipos = [];
+
+    document.addEventListener("DOMContentLoaded", function() {
+        cargarEquipos();
+        cargarCompeticiones();
+    });
+
+    // --- CARGA DE DATOS (CON TOKEN) ---
+    function cargarEquipos() {
+        fetch('http://localhost:8080/api/equipos', {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(respuesta => {
+                if (respuesta.status === 403) {
+                    window.location.href = 'index.html'; // Si el token caduca o no es válido
+                    return;
+                }
+                return respuesta.json();
+            })
+            .then(equipos => {
+                if (!equipos) return;
+                todosLosEquipos = equipos;
+
+                const selectLocal = document.getElementById('select-local');
+                const selectVisitante = document.getElementById('select-visitante');
+                
+                if(buscadorLocal) buscadorLocal.destroy();
+                if(buscadorVisitante) buscadorVisitante.destroy();
+
+                selectLocal.innerHTML = '<option value="">Selecciona Local</option>';
+                selectVisitante.innerHTML = '<option value="">Selecciona Visitante</option>';
+
+                equipos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+                equipos.forEach(equipo => {
+                    const opcion = `<option value="${equipo.idEquipos}">${equipo.nombre}</option>`;
+                    selectLocal.innerHTML += opcion;
+                    selectVisitante.innerHTML += opcion;
+                });
+
+                buscadorLocal = new TomSelect("#select-local", { create: false, sortField: { field: "text" } });
+                buscadorVisitante = new TomSelect("#select-visitante", { create: false, sortField: { field: "text" } });
+            })
+            .catch(error => console.error("Error al cargar equipos:", error));
+    }
+
+    function cargarCompeticiones() {
+        fetch('http://localhost:8080/api/competiciones', {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(respuesta => respuesta.json())
+            .then(competiciones => {
+                const selectCompeticion = document.getElementById('select-competicion');
+                
+                if(buscadorCompeticion) buscadorCompeticion.destroy();
+                
+                selectCompeticion.innerHTML = '<option value="">Selecciona Competición</option>';
+                
+                competiciones.forEach(comp => {
+                    selectCompeticion.innerHTML += `<option value="${comp.idCompeticion}">${comp.nombre}</option>`;
+                });
+
+                buscadorCompeticion = new TomSelect("#select-competicion", { create: false, sortField: { field: "text" } });
+            })
+            .catch(error => console.error("Error al cargar competiciones:", error));
+    }
+
+    // --- GUARDAR NUEVO EQUIPO (Desde el Modal - CON TOKEN) ---
+    function guardarNuevoEquipo(event) {
+        event.preventDefault(); 
+
+        const nombreInput = document.getElementById('nombre-equipo').value.trim();
+        const paisInput = document.getElementById('pais-equipo').value.trim();
+        const estadioInput = document.getElementById('estadio-equipo').value.trim();
+        const urlEscudoInput = document.getElementById('url-escudo').value.trim();
+
+        const equipoExiste = todosLosEquipos.some(equipo => 
+            equipo.nombre.toLowerCase() === nombreInput.toLowerCase()
+        );
+
+        if (equipoExiste) {
+            alert('¡Aviso! Ya existe un equipo llamado "' + nombreInput + '" en tu base de datos.');
+            return; 
+        }
+
+        const nuevoEquipo = {
+            nombre: nombreInput,
+            pais: paisInput,
+            estadio: estadioInput,
+            urlEscudo: urlEscudoInput 
+        };
+
+        fetch('http://localhost:8080/api/equipos', {
+            method: 'POST',
+            headers: { 
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify(nuevoEquipo)
+        })
+        .then(res => {
+            if(res.ok) {
+                alert('¡Equipo añadido con éxito!');
+                cargarEquipos(); 
+                
+                document.getElementById('nombre-equipo').value = '';
+                document.getElementById('pais-equipo').value = '';
+                document.getElementById('estadio-equipo').value = '';
+                document.getElementById('url-escudo').value = '';
+                document.getElementById('imagen-preview').src = escudoPorDefecto;
+                document.querySelector('.vista-previa-escudo').classList.remove('activa');
+                
+                bootstrap.Modal.getInstance(document.getElementById('modalEquipo')).hide();
+            } else {
+                alert('Hubo un error al guardar el equipo.');
+            }
+        });
+    }
+
+    // --- GUARDAR PARTIDO PRINCIPAL (CON TOKEN) ---
+    function guardarPartido() {
+        const idCompeticion = document.getElementById('select-competicion').value;
+        const jornada = document.getElementById('input-jornada').value;
+        const fecha = document.getElementById('input-fecha').value; 
+        const idLocal = document.getElementById('select-local').value;
+        const golesLocal = document.getElementById('goles-local').value;
+        const golesVisitante = document.getElementById('goles-visitante').value;
+        const idVisitante = document.getElementById('select-visitante').value;
+
+        if (!idCompeticion || !fecha || !idLocal || !idVisitante || golesLocal === "" || golesVisitante === "") {
+            alert("Por favor, rellena todos los campos obligatorios.");
+            return;
+        }
+
+        if (idLocal === idVisitante) {
+            alert("¡Error! El equipo local y visitante no pueden ser el mismo.");
+            return;
+        }
+
+        const nuevoPartido = {
+            fecha: fecha,
+            jornada: jornada, // Usamos la variable que ya rescataste arriba
+            golesLocal: parseInt(golesLocal),
+            golesVisitante: parseInt(golesVisitante),
+            competicion: { idCompeticion: parseInt(idCompeticion) },
+            equipoLocal: { idEquipos: parseInt(idLocal) },
+            equipoVisitante: { idEquipos: parseInt(idVisitante) }
+        };
+
+        fetch('http://localhost:8080/api/partidos', {
+            method: 'POST',
+            headers: { 
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify(nuevoPartido)
+        })
+        .then(respuesta => {
+            if (respuesta.ok) {
+                alert("¡Partido guardado con éxito!");
+                
+                if (buscadorLocal) buscadorLocal.clear();
+                if (buscadorVisitante) buscadorVisitante.clear();
+                document.getElementById('goles-local').value = 0;
+                document.getElementById('goles-visitante').value = 0;
+            } else {
+                alert("Hubo un error al guardar el partido. Revisa la base de datos.");
+            }
+        })
+        .catch(error => {
+            console.error("Error de conexión:", error);
+            alert("Fallo de conexión con el servidor.");
+        });
+    }
+
+    // --- MAGIA VISTA PREVIA ESCUDO ---
+    const inputUrl = document.getElementById('url-escudo');
+    const imagenPreview = document.getElementById('imagen-preview');
+    const cajaPreview = document.querySelector('.vista-previa-escudo');
+    const escudoPorDefecto = imagenPreview.src; 
+
+    inputUrl.addEventListener('input', function() {
+        const url = this.value.trim();
+        if (url !== '') {
+            imagenPreview.src = url;
+            cajaPreview.classList.add('activa'); 
+            imagenPreview.onerror = () => {
+                imagenPreview.src = escudoPorDefecto;
+                cajaPreview.classList.remove('activa');
+            };
+        } else {
+            imagenPreview.src = escudoPorDefecto;
+            cajaPreview.classList.remove('activa');
+        }
+    });
+
+    function cerrarSesion() {
+        localStorage.removeItem('token'); // Borra la llave de acceso
+        window.location.href = 'index.html'; // Te saca al login
+    }
+</script>
+
+</body>
+</html>

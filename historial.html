@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrada | Historial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <meta name="referrer" content="no-referrer">
+     
+</head>
+<body>
+
+<!-- Barra de navegación sencilla para moverte entre páginas -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="inicio.html">ᯓ⚽️ DataGrada</a>
+        <div class="navbar-nav">
+            <a class="nav-link active" href="historial.html">Historial</a>
+            <a class="nav-link" href="partidonuevo.html">Añadir Partido</a>
+            <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm ms-auto">Cerrar Sesión</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-4 d-flex align-items-center">
+        Historial de Partidos
+        <span id="contador-partidos" class="badge bg-danger rounded-pill ms-3 fs-6">0</span>
+    </h2>
+
+    <!-- Zona de Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <select id="filtro-competicion" class="form-select">
+                        <option value="">Todas las competiciones</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select id="filtro-equipo" class="form-select">
+                        <option value="">Cualquier equipo</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" id="filtro-fecha" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="aplicarFiltros()">Filtrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Resultados -->
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped text-center align-middle m-0" style="table-layout: fixed;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 15%;">Fecha</th>
+                        <th style="width: 20%;">Competición</th>
+                        <th class="text-end" style="width: 20%;">Local</th>
+                        <th class="text-center" style="width: 15%;">Resultado</th>
+                        <th class="text-start" style="width: 20%;">Visitante</th>
+                        <th class="text-center" style="width: 10%;"></th> <!-- Columna del dropdown -->
+                    </tr>
+                </thead>
+                <tbody id="tabla-partidos">
+                    <!-- El contenido se inyecta desde JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        <!-- Controles de Paginación -->
+        <!-- Controles de Paginación -->
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-2 px-3">
+            <button class="btn btn-paginacion" id="btn-prev" onclick="cambiarPagina(-1)" disabled>Anterior</button>
+            <span class="text-light fw-bold" id="info-paginacion">Página 1</span>
+            <button class="btn btn-paginacion" id="btn-next" onclick="cambiarPagina(1)" disabled>Siguiente</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- SEGURIDAD: COMPROBAR TOKEN AL CARGAR ---
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'index.html';
+    }
+
+    // Variables globales
+    let todosLosPartidos = [];
+    let todosLosEquipos = []; 
+    let buscadorCompeticionHistorial, buscadorEquipoHistorial;
+    // --- NUEVAS VARIABLES DE PAGINACIÓN ---
+    let paginaActual = 1;
+    const partidosPorPagina = 50; // Cambia esto si quieres mostrar 20 o 50 de golpe
+    let listaActualFiltrada = []; // Guarda la lista tras aplicar filtros para poder paginarla 
+
+    document.addEventListener("DOMContentLoaded", function() {
+        cargarFiltros();
+        cargarTodosLosPartidos();
+
+        document.getElementById('filtro-competicion').addEventListener('change', function() {
+            actualizarDesplegableEquipos(this.value);
+        });
+    });
+
+    // --- 1. LLENAR LOS DESPLEGABLES (CON TOKEN) ---
+    function cargarFiltros() {
+        fetch('http://localhost:8080/api/competiciones', {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(competiciones => {
+                const selectComp = document.getElementById('filtro-competicion');
+                competiciones.forEach(comp => {
+                    selectComp.innerHTML += `<option value="${comp.idCompeticion}">${comp.nombre}</option>`;
+                });
+                
+                buscadorCompeticionHistorial = new TomSelect("#filtro-competicion", { create: false, sortField: { field: "text" } });
+            });
+
+        fetch('http://localhost:8080/api/equipos', {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(equipos => {
+                equipos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                todosLosEquipos = equipos; 
+                dibujarDesplegableEquipos(todosLosEquipos); 
+            });
+    }
+
+    // --- 2. LA MAGIA DE LOS EQUIPOS EN CASCADA ---
+    function actualizarDesplegableEquipos(idCompeticionSeleccionada) {
+        if (idCompeticionSeleccionada === "") {
+            dibujarDesplegableEquipos(todosLosEquipos);
+            return;
+        }
+
+        const partidosDeEstaCompeticion = todosLosPartidos.filter(p => 
+            p.competicion.idCompeticion.toString() === idCompeticionSeleccionada
+        );
+
+        const equiposUnicos = new Map();
+        partidosDeEstaCompeticion.forEach(partido => {
+            equiposUnicos.set(partido.equipoLocal.idEquipos, partido.equipoLocal);
+            equiposUnicos.set(partido.equipoVisitante.idEquipos, partido.equipoVisitante);
+        });
+
+        const listaEquiposFiltrada = Array.from(equiposUnicos.values());
+        listaEquiposFiltrada.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        
+        dibujarDesplegableEquipos(listaEquiposFiltrada);
+    }
+
+    function dibujarDesplegableEquipos(listaEquipos) {
+        const selectEq = document.getElementById('filtro-equipo');
+        
+        if (buscadorEquipoHistorial) buscadorEquipoHistorial.destroy();
+
+        selectEq.innerHTML = '<option value="">Cualquier equipo</option>'; 
+        
+        listaEquipos.forEach(eq => {
+            selectEq.innerHTML += `<option value="${eq.idEquipos}">${eq.nombre}</option>`;
+        });
+
+        buscadorEquipoHistorial = new TomSelect("#filtro-equipo", { create: false, sortField: { field: "text" } });
+    }
+
+    // --- 3. CARGAR PARTIDOS Y DIBUJAR TABLA (CON TOKEN) ---
+    function cargarTodosLosPartidos() {
+        fetch('http://localhost:8080/api/partidos', {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(respuesta => respuesta.json())
+            .then(partidos => {
+                partidos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+                todosLosPartidos = partidos;
+                dibujarTabla(todosLosPartidos);
+            })
+            .catch(error => console.error("Error al cargar el historial:", error));
+    }
+
+    function dibujarTabla(listaPartidos) {
+        // Guardamos la lista actual para que la paginación sepa por dónde moverse
+        listaActualFiltrada = listaPartidos; 
+        document.getElementById('contador-partidos').innerText = listaPartidos.length;
+        
+        const tbody = document.getElementById('tabla-partidos');
+        tbody.innerHTML = '';
+
+        if(listaPartidos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-light">No se encontraron partidos.</td></tr>';
+            document.getElementById('info-paginacion').innerText = `Página 1 de 1`;
+            document.getElementById('btn-prev').disabled = true;
+            document.getElementById('btn-next').disabled = true;
+            return;
+        }
+
+        // --- CÁLCULO DE PAGINACIÓN ---
+        const totalPaginas = Math.ceil(listaPartidos.length / partidosPorPagina);
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+
+        const inicio = (paginaActual - 1) * partidosPorPagina;
+        const fin = inicio + partidosPorPagina;
+        
+        // Recortamos solo los partidos que tocan en esta página
+        const partidosPagina = listaPartidos.slice(inicio, fin);
+
+        partidosPagina.forEach(partido => {
+            const escudoLocal = partido.equipoLocal.urlEscudo || 'https://via.placeholder.com/32';
+            const escudoVisitante = partido.equipoVisitante.urlEscudo || 'https://via.placeholder.com/32';
+            
+            // Truco para imprimir "Jornada 4" o solo "Fase de Grupos"
+            const textoJornada = isNaN(partido.jornada) ? partido.jornada : 'Jornada ' + partido.jornada;
+
+            const fila = `
+                <tr>
+                    <td class="align-middle text-center text-light">${partido.fecha}</td>
+                    <td class="align-middle text-center text-light">${partido.competicion.nombre} <br><small class="text-muted">${textoJornada}</small></td>
+                    
+                    <td class="fw-bold text-end align-middle text-light">
+                        ${partido.equipoLocal.nombre}
+                        <img src="${escudoLocal}" alt="Escudo Local" class="ms-2" style="width: 35px; height: 35px; object-fit: contain;">
+                    </td>
+                    
+                    <td class="fs-5 text-primary align-middle px-4 text-center">
+                        ${partido.golesLocal} - ${partido.golesVisitante}
+                    </td>
+                    
+                    <td class="fw-bold text-start align-middle text-light">
+                        <img src="${escudoVisitante}" alt="Escudo Visitante" class="me-2" style="width: 35px; height: 35px; object-fit: contain;">
+                        ${partido.equipoVisitante.nombre}
+                    </td>
+                    
+                    <!-- Menú Desplegable Minimalista -->
+                    <td class="align-middle text-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm text-muted p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.7rem; opacity: 0.5;">▼</button>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow" style="min-width: 120px;">
+                                <li><button class="dropdown-item text-warning fw-bold" onclick="abrirModalEditar(${partido.idPartidos})">✏️ Editar</button></li>
+                                <li><hr class="dropdown-divider border-secondary"></li>
+                                <li><button class="dropdown-item text-danger fw-bold" onclick="borrarPartido(${partido.idPartidos})">🗑️ Borrar</button></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += fila;
+        });
+
+        // Actualizar estado de los botones y el texto
+        document.getElementById('info-paginacion').innerText = `Página ${paginaActual} de ${totalPaginas}`;
+        document.getElementById('btn-prev').disabled = paginaActual === 1;
+        document.getElementById('btn-next').disabled = paginaActual === totalPaginas;
+    }
+
+    // Lógica para los botones de anterior y siguiente
+    function cambiarPagina(direccion) {
+        paginaActual += direccion; 
+        dibujarTabla(listaActualFiltrada);
+    }
+
+    // Aseguramos que al filtrar se vuelva a la página 1
+    function aplicarFiltros() {
+        const idCompeticion = document.getElementById('filtro-competicion').value;
+        const idEquipo = document.getElementById('filtro-equipo').value;
+        const fechaFiltro = document.getElementById('filtro-fecha').value;
+
+        const filtrados = todosLosPartidos.filter(partido => {
+            const cumpleComp = (idCompeticion === "" || partido.competicion.idCompeticion.toString() === idCompeticion);
+            const cumpleEquipo = (idEquipo === "" || 
+                                   partido.equipoLocal.idEquipos.toString() === idEquipo || 
+                                   partido.equipoVisitante.idEquipos.toString() === idEquipo);
+            const cumpleFecha = (fechaFiltro === "" || partido.fecha === fechaFiltro);
+
+            return cumpleComp && cumpleEquipo && cumpleFecha;
+        });
+
+        paginaActual = 1; // Reseteamos a la página 1 al filtrar
+        dibujarTabla(filtrados);
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('token'); // Borra la llave de acceso
+        window.location.href = 'index.html'; // Te saca al login
+    }
+
+    // --- BORRAR PARTIDO ---
+    function borrarPartido(id) {
+        if (!confirm("¿Estás seguro de que quieres borrar este partido? Esta acción no se puede deshacer.")) {
+            return;
+        }
+
+        fetch(`http://localhost:8080/api/partidos/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => {
+            if (res.ok) {
+                alert("Partido borrado con éxito.");
+                cargarTodosLosPartidos(); // Recargamos la tabla automáticamente
+            } else {
+                alert("Error al intentar borrar el partido.");
+            }
+        })
+        .catch(error => console.error("Error al borrar:", error));
+    }
+
+    // --- ABRIR MODAL PARA EDITAR ---
+    function abrirModalEditar(id) {
+        const partido = todosLosPartidos.find(p => p.idPartidos === id); 
+        if (!partido) return;
+
+        document.getElementById('edit-id-partido').value = partido.idPartidos;
+        document.getElementById('edit-fecha').value = partido.fecha;
+        document.getElementById('edit-jornada').value = partido.jornada;
+        document.getElementById('edit-goles-local').value = partido.golesLocal;
+        document.getElementById('edit-goles-visitante').value = partido.golesVisitante;
+
+        const modal = new bootstrap.Modal(document.getElementById('modalEditarPartido'));
+        modal.show();
+    }
+
+    // --- GUARDAR EDICIÓN (PUT) ---
+    function guardarEdicion() {
+        const id = document.getElementById('edit-id-partido').value;
+        const partidoOriginal = todosLosPartidos.find(p => p.idPartidos == id);
+
+        const partidoActualizado = {
+            ...partidoOriginal,
+            fecha: document.getElementById('edit-fecha').value,
+            jornada: document.getElementById('edit-jornada').value,
+            golesLocal: parseInt(document.getElementById('edit-goles-local').value),
+            golesVisitante: parseInt(document.getElementById('edit-goles-visitante').value)
+        };
+
+        fetch(`http://localhost:8080/api/partidos/${id}`, {
+            method: 'PUT',
+            headers: { 
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(partidoActualizado)
+        })
+        .then(res => {
+            if (res.ok) {
+                alert("¡Partido actualizado correctamente!");
+                bootstrap.Modal.getInstance(document.getElementById('modalEditarPartido')).hide();
+                cargarTodosLosPartidos(); 
+            } else {
+                alert("Hubo un error al actualizar.");
+            }
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ========================================== -->
+<!-- MODAL: EDITAR PARTIDO (OCULTO)             -->
+<!-- ========================================== -->
+
+<div class="modal fade" id="modalEditarPartido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #262626; border: 1px solid #333; color: white;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold titulo-form text">✏️ Editar Partido</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-partido">
+                    <input type="hidden" id="edit-id-partido"> <!-- Aquí guardamos el ID oculto -->
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Fecha</label>
+                            <input type="date" id="edit-fecha" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Jornada</label>
+                            <input type="text" id="edit-jornada" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-3">
+                        <div class="col-5">
+                            <label class="form-label text-light">Goles Local</label>
+                            <input type="number" id="edit-goles-local" class="form-control text-center fs-4 fw-bold" min="0" required>
+                        </div>
+                        <div class="col-2 text-center text-light fs-4 fw-bold">-</div>
+                        <div class="col-5">
+                            <label class="form-label text-light">Goles Visitante</label>
+                            <input type="number" id="edit-goles-visitante" class="form-control text-center fs-4 fw-bold" min="0" required>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn w-100 fw-bold text-white" style="background-color: #f43f5e; border: none;" onclick="guardarEdicion()">Actualizar Resultado</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

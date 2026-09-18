@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - DataGrada</title>
+    <!-- Asegúrate de que la ruta a Bootstrap y tu CSS sea la misma que en tu index.html -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body class="bg-dark text-light d-flex align-items-center justify-content-center" style="height: 100vh;">
+
+    <div class="card bg-secondary text-light p-4 shadow-lg" style="width: 100%; max-width: 400px; border-radius: 15px;">
+        <h2 class="text-center mb-4">DataGrada</h2>
+        
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuario</label>
+                <input type="text" class="form-control bg-dark text-light border-secondary" id="username" required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" class="form-control bg-dark text-light border-secondary" id="password" required>
+            </div>
+
+            <!-- Aquí mostraremos el error si te equivocas de contraseña -->
+            <div id="mensajeError" class="alert alert-danger d-none" role="alert">
+                Usuario o contraseña incorrectos.
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 fw-bold">Entrar</button>
+        </form>
+    </div>
+
+    <!-- Archivo JS que crearemos en el siguiente paso -->
+    <script>
+        // Si el usuario ya tiene un token guardado, lo mandamos directo al dashboard
+        if (localStorage.getItem('token')) {
+            window.location.href = 'inicio.html';
+        }
+    </script>
+
+    <!-- 2. Luego cargamos la lógica del formulario por si tiene que iniciar sesión -->
+    <script src="login.js"></script>
+</body>
+</html>

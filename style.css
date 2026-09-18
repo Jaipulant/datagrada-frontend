@@ -1,0 +1,232 @@
+/* =========================================================
+   DATAGRADA - ESTILO DEFINITIVO: GRIS NOCHE + ROJO ROSADO
+========================================================= */
+
+/* --- 1. BASE Y NAVEGACIÓN --- */
+body {
+    background-color: #171717 !important; /* Gris noche muy oscuro */
+    color: #d1d5db !important;
+}
+
+.navbar {
+    background-color: #0a0a0a !important; 
+    border-bottom: 2px solid #f43f5e; /* Acento Frambuesa */
+}
+
+/* --- 2. TARJETAS Y MODALES (Contenedores principales) --- */
+.card, .modal-content {
+    background-color: #262626 !important; 
+    background-image: none !important; 
+    border: 1px solid #333 !important;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    padding: 0; 
+}
+
+.card-body {
+    background-color: transparent !important;
+    backdrop-filter: none;
+}
+
+/* --- 3. TIPOGRAFÍA Y TÍTULOS --- */
+.text-dark, .text-muted {
+    color: #9ca3af !important;
+}
+
+.titulo-form {
+    color: #ffffff !important;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.titulo-form .resalto {
+    color: #f43f5e;
+}
+
+/* --- 4. FORMULARIOS, CAJAS Y BUSCADOR INTELIGENTE --- */
+.form-label {
+    color: #e5e7eb !important; 
+    font-weight: 600; 
+    letter-spacing: 0.5px;
+    margin-bottom: 8px; 
+}
+
+/* Cajas normales (Fecha, Goles, etc.) y Cajas Tom Select */
+.form-control, .form-select, 
+.ts-wrapper .ts-control, 
+.ts-dropdown {
+    background-color: #171717 !important; 
+    border: 1px solid #3f3f46 !important;    
+    color: #ffffff !important; /* BLANCO BRILLANTE PARA TODOS */
+}
+
+/* MATAMOS LA OPACIDAD DE LOS TEXTOS FANTASMA (El problema real) */
+.form-control::placeholder,
+.ts-wrapper .ts-control input::placeholder,
+.ts-wrapper .ts-control .placeholder,
+.ts-wrapper.single .ts-control .item {
+    color: #ffffff !important;
+    opacity: 1 !important; /* Esto evita que el navegador lo vuelva gris */
+}
+
+/* Efecto al hacer clic en las cajas */
+.form-control:focus, .form-select:focus,
+.ts-wrapper.focus .ts-control {
+    background-color: #171717 !important;
+    color: #ffffff !important;
+    border-color: #f43f5e !important;
+    box-shadow: 0 0 0 0.25rem rgba(244, 63, 94, 0.25) !important;
+}
+
+/* Desplegable del buscador */
+.ts-dropdown .active {
+    background-color: #f43f5e !important;
+    color: #ffffff !important;
+}
+
+/* --- 5. BOTONES --- */
+.btn-primary, .btn-success {
+    background-color: #f43f5e !important; 
+    border-color: #f43f5e !important;
+    color: #ffffff !important;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover, .btn-success:hover {
+    background-color: #e11d48 !important; 
+}
+
+.btn-outline-primary {
+    color: #f43f5e !important;
+    border-color: #f43f5e !important;
+    font-weight: bold;
+}
+
+.btn-outline-primary:hover {
+    background-color: #f43f5e !important;
+    color: #ffffff !important;
+}
+
+/* --- 6. TABLA DEL HISTORIAL (Jerarquía visual) --- */
+.table {
+    color: #d1d5db;
+    --bs-table-bg: transparent;
+}
+
+.table-dark th {
+    background-color: #f43f5e !important; 
+    color: #ffffff !important;
+    border-bottom: none;
+    letter-spacing: 0.5px;
+}
+
+/* Fecha (apagada) */
+.table tbody td:nth-child(1) {
+    color: #737373 !important; 
+    font-size: 0.9em;
+    vertical-align: middle;
+}
+
+/* Competición (Liga blanca grande, jornada gris pequeña) */
+.table tbody td:nth-child(2) {
+    color: #737373 !important; 
+    font-size: 0.85em;
+    vertical-align: middle;
+}
+.table tbody td:nth-child(2)::first-line {
+    color: #ffffff !important; 
+    font-weight: bold !important;
+    font-size: 1.3em !important; 
+    line-height: 1.5;
+}
+
+/* Nombres de los equipos */
+.table tbody td.fw-bold {
+    color: #f3f4f6 !important; 
+}
+
+/* Resultado amarillo */
+.table tbody td.text-primary {
+    color: #ffd32a !important; 
+    font-weight: 900 !important; 
+    font-size: 1.15em;
+    text-shadow: none !important; 
+}
+
+/* --- 7. TARJETAS DE INICIO (Menú) --- */
+.action-card {
+    background-color: #262626 !important;
+    border: 2px solid transparent !important; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+    cursor: pointer;
+}
+
+.action-card:hover {
+    border-color: #f43f5e !important; 
+    transform: translateY(-8px); 
+    box-shadow: 0 12px 30px rgba(244, 63, 94, 0.15) !important; 
+}
+
+a.text-decoration-none:hover .text-muted {
+    color: #d1d5db !important;
+}
+
+.imagen-tarjeta {
+    height: 130px; 
+    width: auto;
+    object-fit: contain; 
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.4)); 
+}
+
+.action-card:hover .imagen-tarjeta {
+    transform: scale(1.1) translateY(-5px); 
+}
+
+/* --- 8. VISTA PREVIA DEL ESCUDO (Modal Añadir Equipo) --- */
+.vista-previa-escudo {
+    width: 160px;
+    height: 160px;
+    background-color: #171717; 
+    border: 2px dashed #3f3f46; 
+    border-radius: 20px;
+    padding: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.vista-previa-escudo.activa {
+    border-color: #f43f5e;
+    background-color: #1e1e1e;
+}
+
+/* Estilos extra para el formulario oscuro */
+.form-control:focus {
+    background-color: #212529; /* bg-dark de bootstrap */
+    color: white;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* --- ESTILOS PAGINACIÓN DATAGRADA --- */
+.btn-paginacion {
+    background-color: transparent;
+    color: #f43f5e;
+    border: 2px solid #f43f5e;
+    border-radius: 50px; /* Bordes redondeados estilo píldora */
+    padding: 6px 24px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-paginacion:hover:not(:disabled) {
+    background-color: #f43f5e;
+    color: white;
+}
+
+.btn-paginacion:disabled {
+    color: #6c757d; /* Gris apagado */
+    border-color: #495057; /* Borde gris oscuro */
+    opacity: 0.5;
+    cursor: not-allowed;
+}
