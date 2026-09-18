@@ -87,7 +87,7 @@
         </div>
     </div>
 
-    <!-- 2. VISTA MÓVIL: Tarjetas verticales con texto centrado -->
+    <!-- 2. VISTA MÓVIL: Tarjetas adaptadas con Local a la izquierda y Visitante a la derecha -->
     <div class="d-block d-md-none" id="tabla-partidos-movil">
         <!-- Inyectado por JS -->
     </div>
@@ -254,9 +254,9 @@
             `;
             tbodyPc.innerHTML += filaPc;
 
-            // 2. TARJETA PARA MÓVIL (Con todo el texto perfectamente centrado)
+            // 2. TARJETA PARA MÓVIL (Local izquierda, Marcador centro, Visitante derecha)
             const tarjetaMovil = `
-                <div class="partido-card-movil p-3 mb-3 shadow-sm position-relative text-center">
+                <div class="partido-card-movil p-3 mb-3 shadow-sm position-relative">
                     <!-- Botón de opciones arriba a la derecha -->
                     <div class="dropdown position-absolute" style="top: 10px; right: 10px;">
                         <button class="btn btn-sm text-muted px-2 py-1 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: #2a2a2a;">⚙️</button>
@@ -267,30 +267,33 @@
                         </ul>
                     </div>
 
-                    <!-- Fecha y Competición (Centrado) -->
-                    <div class="mb-2 pe-4">
+                    <!-- Fecha y Competición centradas -->
+                    <div class="text-center mb-2 pe-4">
                         <span class="text-muted small">${partido.fecha}</span> • 
                         <span class="text-light fw-bold">${partido.competicion.nombre}</span> 
                         <span class="text-muted" style="font-size: 0.8rem;">(${textoJornada})</span>
                     </div>
 
-                    <!-- Local (Centrado) -->
-                    <div class="d-flex align-items-center justify-content-center gap-2 my-1">
-                        <img src="${escudoLocal}" alt="Local" style="width: 26px; height: 26px; object-fit: contain; flex-shrink: 0;">
-                        <span class="text-light fw-bold" style="font-size: 0.95rem; word-break: break-word;">${partido.equipoLocal.nombre}</span>
-                    </div>
+                    <!-- Estructura horizontal: Local (izq) | Marcador (centro) | Visitante (der) -->
+                    <div class="d-flex align-items-center justify-content-between gap-1 mt-2">
+                        
+                        <!-- Local a la izquierda -->
+                        <div class="d-flex align-items-center justify-content-end text-end flex-fill gap-1" style="overflow: hidden;">
+                            <span class="text-light fw-bold text-truncate" style="font-size: 0.82rem;">${partido.equipoLocal.nombre}</span>
+                            <img src="${escudoLocal}" alt="Local" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;">
+                        </div>
 
-                    <!-- Marcador central simétrico -->
-                    <div class="my-2">
-                        <span class="fs-4 fw-bold px-3 py-1 rounded d-inline-block" style="background-color: #111; color: #ffd32a; min-width: 90px; letter-spacing: 2px;">
+                        <!-- Marcador central protegido -->
+                        <div class="fs-5 fw-bold px-2 py-1 rounded text-center flex-shrink-0" style="background-color: #111; color: #ffd32a; min-width: 70px; letter-spacing: 1px;">
                             ${partido.golesLocal} - ${partido.golesVisitante}
-                        </span>
-                    </div>
+                        </div>
 
-                    <!-- Visitante (Centrado) -->
-                    <div class="d-flex align-items-center justify-content-center gap-2 my-1">
-                        <img src="${escudoVisitante}" alt="Visitante" style="width: 26px; height: 26px; object-fit: contain; flex-shrink: 0;">
-                        <span class="text-light fw-bold" style="font-size: 0.95rem; word-break: break-word;">${partido.equipoVisitante.nombre}</span>
+                        <!-- Visitante a la derecha -->
+                        <div class="d-flex align-items-center justify-content-start text-start flex-fill gap-1" style="overflow: hidden;">
+                            <img src="${escudoVisitante}" alt="Visitante" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;">
+                            <span class="text-light fw-bold text-truncate" style="font-size: 0.82rem;">${partido.equipoVisitante.nombre}</span>
+                        </div>
+
                     </div>
                 </div>
             `;
