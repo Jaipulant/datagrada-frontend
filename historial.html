@@ -9,44 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <meta name="referrer" content="no-referrer">
     <script src="config.js"></script>
-    <style>
-        .historial-container {
-            max-width: 950px;
-            margin: 0 auto;
-        }
-        .partido-row {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-        .partido-row:hover {
-            border-color: #f43f5e;
-        }
-
-        /* --- OPTIMIZACIÓN EXCLUSIVA PARA MÓVILES --- */
-        @media (max-width: 768px) {
-            .historial-container {
-                padding-left: 8px;
-                padding-right: 8px;
-            }
-            .partido-row {
-                padding: 10px 12px !important; /* Tarjetas mucho más estrechas y compactas */
-                margin-bottom: 8px !important;
-            }
-            /* Marcador adaptado en móvil para que quepan números largos sin romper */
-            .marcador-box {
-                font-size: 1.15rem !important;
-                padding: 2px 8px !important;
-                min-width: 75px !important;
-                letter-spacing: 1px !important;
-            }
-        }
-    </style>
 </head>
 <body>
 
-<!-- Barra de navegación responsive -->
+<!-- Barra de navegación -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
         <a class="navbar-brand" href="inicio.html">ᯓ⚽️ DataGrada</a>
@@ -63,7 +29,7 @@
     </div>
 </nav>
 
-<div class="container historial-container">
+<div class="container">
     <h2 class="mb-4 d-flex align-items-center">
         Historial de Partidos
         <span id="contador-partidos" class="badge bg-danger rounded-pill ms-3 fs-6">0</span>
@@ -93,14 +59,28 @@
         </div>
     </div>
 
-    <!-- Contenedor del Historial -->
-    <div class="card shadow bg-transparent border-0">
-        <div class="card-body p-0" id="tabla-partidos">
-            <!-- Inyectado por JS -->
+    <!-- Tabla de Resultados Clásica Perfecta -->
+    <div class="card shadow">
+        <div class="card-body p-0" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="table table-hover table-striped text-center align-middle m-0" style="table-layout: fixed; min-width: 750px;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 15%;">Fecha</th>
+                        <th style="width: 20%;">Competición</th>
+                        <th class="text-end" style="width: 22%;">Local</th>
+                        <th class="text-center" style="width: 13%;">Resultado</th>
+                        <th class="text-start" style="width: 22%;">Visitante</th>
+                        <th class="text-center" style="width: 8%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-partidos">
+                    <!-- El contenido se inyecta desde JavaScript -->
+                </tbody>
+            </table>
         </div>
-
+        
         <!-- Controles de Paginación -->
-        <div class="d-flex justify-content-between align-items-center mt-4 mb-3 px-2">
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-2 px-3 py-2">
             <button class="btn btn-paginacion" id="btn-prev" onclick="cambiarPagina(-1)" disabled>Anterior</button>
             <span class="text-light fw-bold" id="info-paginacion">Página 1</span>
             <button class="btn btn-paginacion" id="btn-next" onclick="cambiarPagina(1)" disabled>Siguiente</button>
@@ -118,7 +98,7 @@
     let todosLosEquipos = []; 
     let buscadorCompeticionHistorial, buscadorEquipoHistorial;
     let paginaActual = 1;
-    const partidosPorPagina = 20; 
+    const partidosPorPagina = 50; 
     let listaActualFiltrada = []; 
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -132,7 +112,10 @@
 
     function cargarFiltros() {
         fetch(`${API_BASE_URL}/api/competiciones`, {
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
         })
         .then(res => res.json())
         .then(competiciones => {
@@ -144,7 +127,10 @@
         });
 
         fetch(`${API_BASE_URL}/api/equipos`, {
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
         })
         .then(res => res.json())
         .then(equipos => {
@@ -188,11 +174,14 @@
 
     function cargarTodosLosPartidos() {
         fetch(`${API_BASE_URL}/api/partidos`, {
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
         })
         .then(respuesta => respuesta.json())
         .then(partidos => {
-            partidos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            partidos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
             todosLosPartidos = partidos;
             dibujarTabla(todosLosPartidos);
         })
@@ -203,11 +192,11 @@
         listaActualFiltrada = listaPartidos; 
         document.getElementById('contador-partidos').innerText = listaPartidos.length;
         
-        const contenedor = document.getElementById('tabla-partidos');
-        contenedor.innerHTML = '';
+        const tbody = document.getElementById('tabla-partidos');
+        tbody.innerHTML = '';
 
         if(listaPartidos.length === 0) {
-            contenedor.innerHTML = '<div class="text-center py-5 text-muted card p-4">No se encontraron partidos.</div>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-light">No se encontraron partidos.</td></tr>';
             document.getElementById('info-paginacion').innerText = `Página 1 de 1`;
             document.getElementById('btn-prev').disabled = true;
             document.getElementById('btn-next').disabled = true;
@@ -226,50 +215,38 @@
             const escudoVisitante = partido.equipoVisitante.urlEscudo || 'https://via.placeholder.com/32';
             const textoJornada = isNaN(partido.jornada) ? partido.jornada : 'Jornada ' + partido.jornada;
 
-            // Tarjeta con diseño adaptado: compacto en móvil, amplio en PC
-            const tarjeta = `
-                <div class="partido-row p-3 mb-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 gap-md-3 shadow-sm">
+            const fila = `
+                <tr>
+                    <td class="align-middle text-center text-light">${partido.fecha}</td>
+                    <td class="align-middle text-center text-light">${partido.competicion.nombre} <br><small class="text-muted">${textoJornada}</small></td>
                     
-                    <!-- Fecha y Competición -->
-                    <div class="text-center text-md-start w-100 w-md-auto" style="min-width: 130px;">
-                        <span class="text-muted d-block small" style="font-size: 0.75rem;">${partido.fecha}</span>
-                        <span class="text-light fw-bold" style="font-size: 0.9rem;">${partido.competicion.nombre}</span>
-                        <span class="text-muted d-block" style="font-size: 0.75rem;">${textoJornada}</span>
-                    </div>
-
-                    <!-- Enfrentamiento con espacio seguro para marcadores -->
-                    <div class="d-flex align-items-center justify-content-between flex-grow-1 gap-2 w-100 my-1 my-md-0">
-                        <!-- Local -->
-                        <div class="d-flex align-items-center justify-content-end text-end flex-fill gap-2" style="overflow: hidden;">
-                            <span class="text-light fw-bold text-truncate" style="font-size: 0.9rem;">${partido.equipoLocal.nombre}</span>
-                            <img src="${escudoLocal}" alt="Local" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;">
+                    <td class="fw-bold text-end align-middle text-light">
+                        ${partido.equipoLocal.nombre}
+                        <img src="${escudoLocal}" alt="Escudo Local" class="ms-2" style="width: 35px; height: 35px; object-fit: contain;">
+                    </td>
+                    
+                    <td class="fs-5 text-primary align-middle px-2 text-center" style="white-space: nowrap;">
+                        ${partido.golesLocal} - ${partido.golesVisitante}
+                    </td>
+                    
+                    <td class="fw-bold text-start align-middle text-light">
+                        <img src="${escudoVisitante}" alt="Escudo Visitante" class="me-2" style="width: 35px; height: 35px; object-fit: contain;">
+                        ${partido.equipoVisitante.nombre}
+                    </td>
+                    
+                    <td class="align-middle text-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm text-muted p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.7rem; opacity: 0.5;">▼</button>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow" style="min-width: 120px;">
+                                <li><button class="dropdown-item text-warning fw-bold" onclick="abrirModalEditar(${partido.idPartidos})">✏️ Editar</button></li>
+                                <li><hr class="dropdown-divider border-secondary"></li>
+                                <li><button class="dropdown-item text-danger fw-bold" onclick="borrarPartido(${partido.idPartidos})">🗑️ Borrar</button></li>
+                            </ul>
                         </div>
-
-                        <!-- Marcador con clase específica para móvil (marcador-box) -->
-                        <div class="marcador-box fs-4 fw-bold px-2 py-1 rounded text-center flex-shrink-0" style="background-color: #111; color: #ffd32a; min-width: 85px; letter-spacing: 1px;">
-                            ${partido.golesLocal} - ${partido.golesVisitante}
-                        </div>
-
-                        <!-- Visitante -->
-                        <div class="d-flex align-items-center justify-content-start text-start flex-fill gap-2" style="overflow: hidden;">
-                            <img src="${escudoVisitante}" alt="Visitante" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;">
-                            <span class="text-light fw-bold text-truncate" style="font-size: 0.9rem;">${partido.equipoVisitante.nombre}</span>
-                        </div>
-                    </div>
-
-                    <!-- Botones de Acción -->
-                    <div class="dropdown text-end position-absolute position-md-static" style="top: 10px; right: 10px;">
-                        <button class="btn btn-sm text-muted px-2 py-1 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: #2a2a2a;">⚙️</button>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow" style="min-width: 120px;">
-                            <li><button class="dropdown-item text-warning fw-bold" onclick="abrirModalEditar(${partido.idPartidos})">✏️ Editar</button></li>
-                            <li><hr class="dropdown-divider border-secondary"></li>
-                            <li><button class="dropdown-item text-danger fw-bold" onclick="borrarPartido(${partido.idPartidos})">🗑️ Borrar</button></li>
-                        </ul>
-                    </div>
-
-                </div>
+                    </td>
+                </tr>
             `;
-            contenedor.innerHTML += tarjeta;
+            tbody.innerHTML += fila;
         });
 
         document.getElementById('info-paginacion').innerText = `Página ${paginaActual} de ${totalPaginas}`;
@@ -307,7 +284,9 @@
     }
 
     function borrarPartido(id) {
-        if (!confirm("¿Estás seguro de que quieres borrar este partido?")) return;
+        if (!confirm("¿Estás seguro de que quieres borrar este partido? Esta acción no se puede deshacer.")) {
+            return;
+        }
 
         fetch(`${API_BASE_URL}/api/partidos/${id}`, {
             method: 'DELETE',
