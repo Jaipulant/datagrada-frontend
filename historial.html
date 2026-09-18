@@ -10,7 +10,6 @@
     <meta name="referrer" content="no-referrer">
     <script src="config.js"></script>
     <style>
-        /* Estilo para las tarjetas en versión móvil */
         .partido-card-movil {
             background-color: #1e1e1e;
             border: 1px solid #333;
@@ -67,7 +66,7 @@
         </div>
     </div>
 
-    <!-- 1. VISTA PC: Tabla clásica perfecta (Visible solo de tablet en adelante: d-none d-md-block) -->
+    <!-- 1. VISTA PC: Tabla clásica perfecta -->
     <div class="card shadow d-none d-md-block">
         <div class="card-body p-0">
             <table class="table table-hover table-striped text-center align-middle m-0" style="table-layout: fixed;">
@@ -88,12 +87,12 @@
         </div>
     </div>
 
-    <!-- 2. VISTA MÓVIL: Tarjetas verticales (Visible solo en móviles: d-block d-md-none) -->
+    <!-- 2. VISTA MÓVIL: Tarjetas verticales con texto centrado -->
     <div class="d-block d-md-none" id="tabla-partidos-movil">
         <!-- Inyectado por JS -->
     </div>
 
-    <!-- Controles de Paginación (Común para ambos) -->
+    <!-- Controles de Paginación -->
     <div class="card shadow bg-transparent border-0 mt-3">
         <div class="d-flex justify-content-between align-items-center mb-3 px-2">
             <button class="btn btn-paginacion" id="btn-prev" onclick="cambiarPagina(-1)" disabled>Anterior</button>
@@ -113,7 +112,7 @@
     let todosLosEquipos = []; 
     let buscadorCompeticionHistorial, buscadorEquipoHistorial;
     let paginaActual = 1;
-    const partidosPorPagina = 20; // 20 por página para móvil y PC de forma fluida
+    const partidosPorPagina = 20; 
     let listaActualFiltrada = []; 
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -255,9 +254,9 @@
             `;
             tbodyPc.innerHTML += filaPc;
 
-            // 2. TARJETA PARA MÓVIL (Vertical, compacta, sin scroll horizontal)
+            // 2. TARJETA PARA MÓVIL (Con todo el texto perfectamente centrado)
             const tarjetaMovil = `
-                <div class="partido-card-movil p-3 mb-3 shadow-sm position-relative">
+                <div class="partido-card-movil p-3 mb-3 shadow-sm position-relative text-center">
                     <!-- Botón de opciones arriba a la derecha -->
                     <div class="dropdown position-absolute" style="top: 10px; right: 10px;">
                         <button class="btn btn-sm text-muted px-2 py-1 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: #2a2a2a;">⚙️</button>
@@ -268,31 +267,30 @@
                         </ul>
                     </div>
 
-                    <!-- Fecha y Competición -->
+                    <!-- Fecha y Competición (Centrado) -->
                     <div class="mb-2 pe-4">
                         <span class="text-muted small">${partido.fecha}</span> • 
                         <span class="text-light fw-bold">${partido.competicion.nombre}</span> 
                         <span class="text-muted" style="font-size: 0.8rem;">(${textoJornada})</span>
                     </div>
 
-                    <!-- Equipos y Marcador -->
-                    <div class="d-flex align-items-center justify-content-between gap-2 mt-2">
-                        <!-- Local -->
-                        <div class="d-flex align-items-center justify-content-end text-end flex-fill gap-2" style="overflow: hidden;">
-                            <span class="text-light fw-bold" style="font-size: 0.9rem; word-break: break-word;">${partido.equipoLocal.nombre}</span>
-                            <img src="${escudoLocal}" alt="Local" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;">
-                        </div>
+                    <!-- Local (Centrado) -->
+                    <div class="d-flex align-items-center justify-content-center gap-2 my-1">
+                        <img src="${escudoLocal}" alt="Local" style="width: 26px; height: 26px; object-fit: contain; flex-shrink: 0;">
+                        <span class="text-light fw-bold" style="font-size: 0.95rem; word-break: break-word;">${partido.equipoLocal.nombre}</span>
+                    </div>
 
-                        <!-- Marcador protegido con ancho holgado -->
-                        <div class="fs-4 fw-bold px-2 py-1 rounded text-center flex-shrink-0" style="background-color: #111; color: #ffd32a; min-width: 85px; letter-spacing: 1px;">
+                    <!-- Marcador central simétrico -->
+                    <div class="my-2">
+                        <span class="fs-4 fw-bold px-3 py-1 rounded d-inline-block" style="background-color: #111; color: #ffd32a; min-width: 90px; letter-spacing: 2px;">
                             ${partido.golesLocal} - ${partido.golesVisitante}
-                        </div>
+                        </span>
+                    </div>
 
-                        <!-- Visitante -->
-                        <div class="d-flex align-items-center justify-content-start text-start flex-fill gap-2" style="overflow: hidden;">
-                            <img src="${escudoVisitante}" alt="Visitante" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;">
-                            <span class="text-light fw-bold" style="font-size: 0.9rem; word-break: break-word;">${partido.equipoVisitante.nombre}</span>
-                        </div>
+                    <!-- Visitante (Centrado) -->
+                    <div class="d-flex align-items-center justify-content-center gap-2 my-1">
+                        <img src="${escudoVisitante}" alt="Visitante" style="width: 26px; height: 26px; object-fit: contain; flex-shrink: 0;">
+                        <span class="text-light fw-bold" style="font-size: 0.95rem; word-break: break-word;">${partido.equipoVisitante.nombre}</span>
                     </div>
                 </div>
             `;
