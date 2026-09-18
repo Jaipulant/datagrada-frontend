@@ -17,11 +17,30 @@
         .partido-row {
             background-color: #1e1e1e;
             border: 1px solid #333;
-            border-radius: 12px;
+            border-radius: 10px;
             transition: all 0.2s ease;
         }
         .partido-row:hover {
             border-color: #f43f5e;
+        }
+
+        /* --- OPTIMIZACIÓN EXCLUSIVA PARA MÓVILES --- */
+        @media (max-width: 768px) {
+            .historial-container {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+            .partido-row {
+                padding: 10px 12px !important; /* Tarjetas mucho más estrechas y compactas */
+                margin-bottom: 8px !important;
+            }
+            /* Marcador adaptado en móvil para que quepan números largos sin romper */
+            .marcador-box {
+                font-size: 1.15rem !important;
+                padding: 2px 8px !important;
+                min-width: 75px !important;
+                letter-spacing: 1px !important;
+            }
         }
     </style>
 </head>
@@ -207,12 +226,39 @@
             const escudoVisitante = partido.equipoVisitante.urlEscudo || 'https://via.placeholder.com/32';
             const textoJornada = isNaN(partido.jornada) ? partido.jornada : 'Jornada ' + partido.jornada;
 
-            // Tarjeta optimizada: En móvil se organiza verticalmente para dar total libertad de espacio al marcador
+            // Tarjeta con diseño adaptado: compacto en móvil, amplio en PC
             const tarjeta = `
-                <div class="partido-row p-3 mb-3 shadow-sm position-relative">
+                <div class="partido-row p-3 mb-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 gap-md-3 shadow-sm">
                     
-                    <!-- Botón de Opciones (Arriba a la derecha en móvil) -->
-                    <div class="dropdown position-absolute" style="top: 12px; right: 12px;">
+                    <!-- Fecha y Competición -->
+                    <div class="text-center text-md-start w-100 w-md-auto" style="min-width: 130px;">
+                        <span class="text-muted d-block small" style="font-size: 0.75rem;">${partido.fecha}</span>
+                        <span class="text-light fw-bold" style="font-size: 0.9rem;">${partido.competicion.nombre}</span>
+                        <span class="text-muted d-block" style="font-size: 0.75rem;">${textoJornada}</span>
+                    </div>
+
+                    <!-- Enfrentamiento con espacio seguro para marcadores -->
+                    <div class="d-flex align-items-center justify-content-between flex-grow-1 gap-2 w-100 my-1 my-md-0">
+                        <!-- Local -->
+                        <div class="d-flex align-items-center justify-content-end text-end flex-fill gap-2" style="overflow: hidden;">
+                            <span class="text-light fw-bold text-truncate" style="font-size: 0.9rem;">${partido.equipoLocal.nombre}</span>
+                            <img src="${escudoLocal}" alt="Local" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;">
+                        </div>
+
+                        <!-- Marcador con clase específica para móvil (marcador-box) -->
+                        <div class="marcador-box fs-4 fw-bold px-2 py-1 rounded text-center flex-shrink-0" style="background-color: #111; color: #ffd32a; min-width: 85px; letter-spacing: 1px;">
+                            ${partido.golesLocal} - ${partido.golesVisitante}
+                        </div>
+
+                        <!-- Visitante -->
+                        <div class="d-flex align-items-center justify-content-start text-start flex-fill gap-2" style="overflow: hidden;">
+                            <img src="${escudoVisitante}" alt="Visitante" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;">
+                            <span class="text-light fw-bold text-truncate" style="font-size: 0.9rem;">${partido.equipoVisitante.nombre}</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="dropdown text-end position-absolute position-md-static" style="top: 10px; right: 10px;">
                         <button class="btn btn-sm text-muted px-2 py-1 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: #2a2a2a;">⚙️</button>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow" style="min-width: 120px;">
                             <li><button class="dropdown-item text-warning fw-bold" onclick="abrirModalEditar(${partido.idPartidos})">✏️ Editar</button></li>
@@ -221,34 +267,6 @@
                         </ul>
                     </div>
 
-                    <!-- Cabecera de la tarjeta: Fecha y Competición -->
-                    <div class="text-center text-md-start mb-2 pe-4">
-                        <span class="text-muted small">${partido.fecha}</span> • 
-                        <span class="text-light fw-bold">${partido.competicion.nombre}</span> 
-                        <span class="text-muted" style="font-size: 0.8rem;">(${textoJornada})</span>
-                    </div>
-
-                    <!-- Cuerpo central: Equipos y Marcador -->
-                    <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mt-2">
-                        
-                        <!-- Equipo Local -->
-                        <div class="d-flex align-items-center justify-content-center justify-content-md-end text-center text-md-end gap-2 w-100 flex-md-fill">
-                            <span class="text-light fw-bold" style="word-break: break-word;">${partido.equipoLocal.nombre}</span>
-                            <img src="${escudoLocal}" alt="Local" style="width: 34px; height: 34px; object-fit: contain; flex-shrink: 0;">
-                        </div>
-
-                        <!-- Marcador central con espacio asegurado -->
-                        <div class="fs-3 fw-bold px-3 py-1 rounded text-center my-1 my-md-0" style="background-color: #111; color: #ffd32a; min-width: 110px; letter-spacing: 2px; flex-shrink: 0;">
-                            ${partido.golesLocal} - ${partido.golesVisitante}
-                        </div>
-
-                        <!-- Equipo Visitante -->
-                        <div class="d-flex align-items-center justify-content-center justify-content-md-start text-center text-md-start gap-2 w-100 flex-md-fill">
-                            <img src="${escudoVisitante}" alt="Visitante" style="width: 34px; height: 34px; object-fit: contain; flex-shrink: 0;">
-                            <span class="text-light fw-bold" style="word-break: break-word;">${partido.equipoVisitante.nombre}</span>
-                        </div>
-
-                    </div>
                 </div>
             `;
             contenedor.innerHTML += tarjeta;
