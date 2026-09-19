@@ -25,7 +25,16 @@
             
             <div class="mb-4">
                 <label for="password" class="form-label">Contraseña</label>
-                <input type="password" class="form-control bg-dark text-light border-secondary" id="password" required>
+                <div class="input-group">
+                    <input type="password" class="form-control bg-dark text-light border-secondary border-end-0" id="password" required>
+                    <button type="button" class="btn btn-outline-secondary border-start-0 bg-dark text-muted" id="btnTogglePassword" style="border-color: #6c757d !important;" onclick="togglePassword()">
+                        👁️
+                    </button>
+                </div>
+                <!-- Aviso de mayúsculas sutil y discreto -->
+                <div id="avisoMayus" class="form-text text-muted d-none mt-1" style="font-size: 0.75rem; color: #9ca3af !important;">
+                    ⚠️ Mayúsculas activadas
+                </div>
             </div>
 
             <div id="mensajeError" class="alert alert-danger d-none" role="alert">
@@ -40,6 +49,46 @@
         if (localStorage.getItem('token')) {
             window.location.href = 'inicio.html';
         }
+
+        // Función para mostrar/ocultar contraseña con el ojito
+        function togglePassword() {
+            const inputPass = document.getElementById('password');
+            const btn = document.getElementById('btnTogglePassword');
+            if (inputPass.type === 'password') {
+                inputPass.type = 'text';
+                btn.textContent = '👁️‍🗨️'; // Cambia ligeramente el icono para indicar que está visible
+            } else {
+                inputPass.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        // Detección de Bloq Mayús (Caps Lock)
+        const passwordInput = document.getElementById('password');
+        const avisoMayus = document.getElementById('avisoMayus');
+
+        passwordInput.addEventListener('keyup', function(e) {
+            // getModifierState comprueba si las mayúsculas están activas
+            const isCapsOn = e.getModifierState && e.getModifierState('CapsLock');
+            if (isCapsOn) {
+                avisoMayus.classList.remove('d-none');
+            } else {
+                avisoMayus.classList.add('d-none');
+            }
+        });
+
+        passwordInput.addEventListener('keydown', function(e) {
+            const isCapsOn = e.getModifierState && e.getModifierState('CapsLock');
+            if (isCapsOn) {
+                avisoMayus.classList.remove('d-none');
+            } else {
+                avisoMayus.classList.add('d-none');
+            }
+        });
+
+        passwordInput.addEventListener('blur', function() {
+            avisoMayus.classList.add('d-none');
+        });
     </script>
     <script src="login.js"></script>
 </body>
