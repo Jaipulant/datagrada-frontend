@@ -5,7 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataGrada</title>
+    
+    <!-- Iconos y configuración para app móvil / PWA -->
     <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DataGrada">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css"> 
@@ -49,7 +55,6 @@
         const tokenGuardado = localStorage.getItem('token');
         
         if (tokenGuardado) {
-            // Verificamos si el token todavía es válido en el servidor antes de redirigir
             fetch(`${API_BASE_URL}/api/usuarios/me`, {
                 method: 'GET',
                 headers: { 'Authorization': 'Bearer ' + tokenGuardado }
@@ -66,7 +71,6 @@
             });
         }
 
-        // Función para mostrar/ocultar contraseña con el ojito
         function togglePassword() {
             const inputPass = document.getElementById('password');
             const btn = document.getElementById('btnTogglePassword');
@@ -79,7 +83,6 @@
             }
         }
 
-        // Detección de Bloq Mayús (Caps Lock)
         const passwordInput = document.getElementById('password');
         const avisoMayus = document.getElementById('avisoMayus');
 
