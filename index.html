@@ -46,8 +46,24 @@
     </div>
 
     <script>
-        if (localStorage.getItem('token')) {
-            window.location.href = 'inicio.html';
+        const tokenGuardado = localStorage.getItem('token');
+        
+        if (tokenGuardado) {
+            // Verificamos si el token todavía es válido en el servidor antes de redirigir
+            fetch(`${API_BASE_URL}/api/usuarios/me`, {
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer ' + tokenGuardado }
+            })
+            .then(res => {
+                if (res.ok) {
+                    window.location.href = 'inicio.html';
+                } else {
+                    localStorage.removeItem('token');
+                }
+            })
+            .catch(() => {
+                localStorage.removeItem('token');
+            });
         }
 
         // Función para mostrar/ocultar contraseña con el ojito
@@ -56,7 +72,7 @@
             const btn = document.getElementById('btnTogglePassword');
             if (inputPass.type === 'password') {
                 inputPass.type = 'text';
-                btn.textContent = '👁️‍🗨️'; // Cambia ligeramente el icono para indicar que está visible
+                btn.textContent = '👁️‍🗨️';
             } else {
                 inputPass.type = 'password';
                 btn.textContent = '👁️';
@@ -68,7 +84,6 @@
         const avisoMayus = document.getElementById('avisoMayus');
 
         passwordInput.addEventListener('keyup', function(e) {
-            // getModifierState comprueba si las mayúsculas están activas
             const isCapsOn = e.getModifierState && e.getModifierState('CapsLock');
             if (isCapsOn) {
                 avisoMayus.classList.remove('d-none');
