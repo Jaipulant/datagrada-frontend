@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataGrada | Historial</title>
+    <!-- Favicon con la foto de perfil -->
+    <link rel="icon" type="image/png" href="https://i.ibb.co/xKJvyL47/roberto.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
@@ -21,14 +23,13 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        /* Permite que los nombres largos salten de línea elegantemente en móvil sin romper la estructura */
         .equipo-nombre-movil {
             font-size: 0.8rem;
             line-height: 1.1;
             white-space: normal;
             word-break: break-word;
             display: -webkit-box;
-            -webkit-line-clamp: 2; /* Máximo 2 líneas para que no crezca demasiado */
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -54,10 +55,22 @@
 </nav>
 
 <div class="container">
-    <h2 class="mb-4 d-flex align-items-center">
-        Historial de Partidos
-        <span id="contador-partidos" class="badge bg-danger rounded-pill ms-3 fs-6">0</span>
-    </h2>
+    <!-- Cabecera con Contador y Selector de Orden -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <h2 class="mb-0 d-flex align-items-center">
+            Historial de Partidos
+            <span id="contador-partidos" class="badge bg-danger rounded-pill ms-3 fs-6">0</span>
+        </h2>
+        
+        <!-- Selector de Ordenación -->
+        <div class="d-flex align-items-center gap-2" style="max-width: 300px;">
+            <label for="select-orden" class="text-muted small text-nowrap fw-bold">Ordenar:</label>
+            <select id="select-orden" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="cambiarOrden()">
+                <option value="antiguos">Más antiguos primero</option>
+                <option value="recientes" selected>Más recientes primero</option>
+            </select>
+        </div>
+    </div>
 
     <!-- Zona de Filtros Responsive -->
     <div class="card shadow-sm mb-4">
@@ -104,7 +117,7 @@
         </div>
     </div>
 
-    <!-- 2. VISTA MÓVIL: Tarjetas optimizadas con salto de línea en nombres largos -->
+    <!-- 2. VISTA MÓVIL: Tarjetas optimizadas -->
     <div class="d-block d-md-none" id="tabla-partidos-movil">
         <!-- Inyectado por JS -->
     </div>
@@ -201,13 +214,61 @@
         fetch(`${API_BASE_URL}/api/partidos`, {
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
         })
-        .then(respuesta => respuesta.json())
+        .then(respuesta => {
+            if (respuesta.status === 401 || respuesta.status === 403) {
+                cerrarSesion();
+                return null;
+            }
+            return respuesta.json();
+        })
         .then(partidos => {
-            partidos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+            if (!partidos) return;
             todosLosPartidos = partidos;
-            dibujarTabla(todosLosPartidos);
+            aplicarOrdenYFiltros();
         })
         .catch(error => console.error("Error al cargar el historial:", error));
+    }
+
+    function ordenarLista(lista) {
+        const orden = document.getElementById('select-orden').value;
+        return lista.sort((a, b) => {
+            const fechaA = new Date(a.fecha);
+            const fechaB = new Date(b.fecha);
+            if (orden === 'recientes') {
+                return fechaB - fechaA; // Del más nuevo al más antiguo
+            } else {
+                return fechaA - fechaB; // Del más antiguo al más nuevo
+            }
+        });
+    }
+
+    function cambiarOrden() {
+        paginaActual = 1;
+        aplicarOrdenYFiltros();
+    }
+
+    function aplicarFiltros() {
+        paginaActual = 1;
+        aplicarOrdenYFiltros();
+    }
+
+    function aplicarOrdenYFiltros() {
+        const idCompeticion = document.getElementById('filtro-competicion').value;
+        const idEquipo = document.getElementById('filtro-equipo').value;
+        const fechaFiltro = document.getElementById('filtro-fecha').value;
+
+        const filtrados = todosLosPartidos.filter(partido => {
+            const cumpleComp = (idCompeticion === "" || partido.competicion.idCompeticion.toString() === idCompeticion);
+            const cumpleEquipo = (idEquipo === "" || 
+                                   partido.equipoLocal.idEquipos.toString() === idEquipo || 
+                                   partido.equipoVisitante.idEquipos.toString() === idEquipo);
+            const cumpleFecha = (fechaFiltro === "" || partido.fecha === fechaFiltro);
+
+            return cumpleComp && cumpleEquipo && cumpleFecha;
+        });
+
+        ordenarLista(filtrados);
+        dibujarTabla(filtrados);
     }
 
     function dibujarTabla(listaPartidos) {
@@ -241,7 +302,7 @@
             const escudoVisitante = partido.equipoVisitante.urlEscudo || 'https://via.placeholder.com/32';
             const textoJornada = isNaN(partido.jornada) ? partido.jornada : 'Jornada ' + partido.jornada;
 
-            // 1. FILA PARA PC (Tabla clásica intacta)
+            // 1. FILA PARA PC
             const filaPc = `
                 <tr>
                     <td class="align-middle text-center text-light">${partido.fecha}</td>
@@ -271,10 +332,9 @@
             `;
             tbodyPc.innerHTML += filaPc;
 
-            // 2. TARJETA MÓVIL: Con nombres largos adaptados para bajar a 2 líneas (equipo-nombre-movil)
+            // 2. TARJETA MÓVIL
             const tarjetaMovil = `
                 <div class="partido-card-movil p-3 mb-3 shadow-sm position-relative">
-                    <!-- Botón de opciones arriba a la derecha -->
                     <div class="dropdown position-absolute" style="top: 10px; right: 10px;">
                         <button class="btn btn-sm text-muted px-2 py-1 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: #2a2a2a;">⚙️</button>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow" style="min-width: 120px;">
@@ -284,33 +344,26 @@
                         </ul>
                     </div>
 
-                    <!-- Cabecera ajustada -->
                     <div class="text-center mb-2 pe-4 header-movil-partido">
                         <span class="text-muted">${partido.fecha}</span> • 
                         <span class="text-light fw-bold">${partido.competicion.nombre}</span> 
                         <span class="text-muted">(${textoJornada})</span>
                     </div>
 
-                    <!-- Estructura de columnas fijas con salto de línea natural en nombres -->
                     <div class="d-flex align-items-center justify-content-between gap-2 mt-2">
-                        
-                        <!-- Columna Local -->
                         <div class="d-flex align-items-center justify-content-end text-end gap-1" style="flex: 1 1 0; min-width: 0;">
                             <span class="text-light fw-bold equipo-nombre-movil" title="${partido.equipoLocal.nombre}">${partido.equipoLocal.nombre}</span>
                             <img src="${escudoLocal}" alt="Local" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;">
                         </div>
 
-                        <!-- Columna Resultado fija en el centro -->
                         <div class="fs-5 fw-bold px-2 py-1 rounded text-center flex-shrink-0" style="background-color: #111; color: #ffd32a; width: 85px; letter-spacing: 1px;">
                             ${partido.golesLocal} - ${partido.golesVisitante}
                         </div>
 
-                        <!-- Columna Visitante -->
                         <div class="d-flex align-items-center justify-content-start text-start gap-1" style="flex: 1 1 0; min-width: 0;">
                             <img src="${escudoVisitante}" alt="Visitante" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;">
                             <span class="text-light fw-bold equipo-nombre-movil" title="${partido.equipoVisitante.nombre}">${partido.equipoVisitante.nombre}</span>
                         </div>
-
                     </div>
                 </div>
             `;
@@ -327,34 +380,13 @@
         dibujarTabla(listaActualFiltrada);
     }
 
-    function aplicarFiltros() {
-        const idCompeticion = document.getElementById('filtro-competicion').value;
-        const idEquipo = document.getElementById('filtro-equipo').value;
-        const fechaFiltro = document.getElementById('filtro-fecha').value;
-
-        const filtrados = todosLosPartidos.filter(partido => {
-            const cumpleComp = (idCompeticion === "" || partido.competicion.idCompeticion.toString() === idCompeticion);
-            const cumpleEquipo = (idEquipo === "" || 
-                                   partido.equipoLocal.idEquipos.toString() === idEquipo || 
-                                   partido.equipoVisitante.idEquipos.toString() === idEquipo);
-            const cumpleFecha = (fechaFiltro === "" || partido.fecha === fechaFiltro);
-
-            return cumpleComp && cumpleEquipo && cumpleFecha;
-        });
-
-        paginaActual = 1; 
-        dibujarTabla(filtrados);
-    }
-
     function cerrarSesion() {
         localStorage.removeItem('token'); 
         window.location.href = 'index.html'; 
     }
 
     function borrarPartido(id) {
-        if (!confirm("¿Estás seguro de que quieres borrar este partido? Esta acción no se puede deshacer.")) {
-            return;
-        }
+        if (!confirm("¿Estás seguro de que quieres borrar este partido?")) return;
 
         fetch(`${API_BASE_URL}/api/partidos/${id}`, {
             method: 'DELETE',
@@ -367,8 +399,7 @@
             } else {
                 alert("Error al intentar borrar el partido.");
             }
-        })
-        .catch(error => console.error("Error al borrar:", error));
+        });
     }
 
     function abrirModalEditar(id) {
@@ -381,8 +412,7 @@
         document.getElementById('edit-goles-local').value = partido.golesLocal;
         document.getElementById('edit-goles-visitante').value = partido.golesVisitante;
 
-        const modal = new bootstrap.Modal(document.getElementById('modalEditarPartido'));
-        modal.show();
+        new bootstrap.Modal(document.getElementById('modalEditarPartido')).show();
     }
 
     function guardarEdicion() {
@@ -425,7 +455,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background-color: #262626; border: 1px solid #333; color: white;">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold titulo-form text">✏️ Editar Partido</h5>
+                <h5 class="modal-title fw-bold titulo-form">✏️ Editar Partido</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
