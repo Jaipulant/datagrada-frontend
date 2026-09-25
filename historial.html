@@ -226,23 +226,12 @@
     }
 
     function ordenarLista(lista) {
-    const orden = document.getElementById('select-orden').value;
+        const orden = document.getElementById('select-orden').value;
         return lista.sort((a, b) => {
-            const fechaA = new Date(a.fecha);
-            const fechaB = new Date(b.fecha);
-            
             if (orden === 'recientes') {
-                // Si las fechas son distintas, ordena por fecha (más nuevo primero)
-                if (fechaB - fechaA !== 0) {
-                    return fechaB - fechaA;
-                }
-                // Si la fecha es EXACTA, desemata por ID (el ID más alto va primero)
-                return b.id - a.id; 
+                return Number(b.id) - Number(a.id); // El ID más alto (último añadido) primero
             } else {
-                if (fechaA - fechaB !== 0) {
-                    return fechaA - fechaB;
-                }
-                return a.id - b.id;
+                return Number(a.id) - Number(b.id); // Del primero al último
             }
         });
     }
