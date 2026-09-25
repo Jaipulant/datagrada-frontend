@@ -229,9 +229,9 @@
         const orden = document.getElementById('select-orden').value;
         return lista.sort((a, b) => {
             if (orden === 'recientes') {
-                return Number(b.id) - Number(a.id); // El ID más alto (último añadido) primero
+                return Number(b.idPartidos) - Number(a.idPartidos); // Corregido: usa idPartidos
             } else {
-                return Number(a.id) - Number(b.id); // Del primero al último
+                return Number(a.idPartidos) - Number(b.idPartidos); // Corregido: usa idPartidos
             }
         });
     }
