@@ -78,26 +78,33 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <select id="filtro-competicion" class="form-select">
                         <option value="">Todas las competiciones</option>
                     </select>
                 </div>
-                <div class="col-12 col-md-4">
+                
+                <!-- AQUÍ ESTÁ EL NUEVO FILTRO DE JORNADA -->
+                <div class="col-12 col-lg-2">
+                    <input type="text" id="filtro-jornada" class="form-control" placeholder="Jornada (Ej: 38 o Final)">
+                </div>
+                
+                <div class="col-12 col-lg-3">
                     <select id="filtro-equipo" class="form-select">
                         <option value="">Cualquier equipo</option>
                     </select>
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-2">
                     <input type="date" id="filtro-fecha" class="form-control">
                 </div>
-                <div class="col-12 col-md-2">
+                <div class="col-12 col-lg-2">
                     <button class="btn btn-primary w-100" onclick="aplicarFiltros()">Filtrar</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- TABLA PARA PC -->
     <div class="card shadow d-none d-md-block">
         <div class="card-body p-0">
             <table class="table table-hover table-striped text-center align-middle m-0" style="table-layout: fixed;">
@@ -112,13 +119,14 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-partidos-pc">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
 
+    <!-- TARJETAS PARA MÓVIL -->
     <div class="d-block d-md-none" id="tabla-partidos-movil">
-        </div>
+    </div>
 
     <div class="card shadow bg-transparent border-0 mt-3">
         <div class="d-flex justify-content-between align-items-center mb-3 px-2">
@@ -227,33 +235,28 @@
     }
 
     function ordenarLista(lista) {
-    const orden = document.getElementById('select-orden').value;
-    return lista.sort((a, b) => {
-        if (orden === 'fecha_desc') {
-            // Más recientes primero
-            const diffFecha = new Date(b.fecha) - new Date(a.fecha);
-            if (diffFecha === 0) {
-                // Si la fecha es la misma, el de mayor ID (último añadido) va primero
+        const orden = document.getElementById('select-orden').value;
+        return lista.sort((a, b) => {
+            if (orden === 'fecha_desc') {
+                const diffFecha = new Date(b.fecha) - new Date(a.fecha);
+                if (diffFecha === 0) {
+                    return Number(b.idPartidos) - Number(a.idPartidos);
+                }
+                return diffFecha;
+                
+            } else if (orden === 'fecha_asc') {
+                const diffFecha = new Date(a.fecha) - new Date(b.fecha);
+                if (diffFecha === 0) {
+                    return Number(a.idPartidos) - Number(b.idPartidos);
+                }
+                return diffFecha;
+                
+            } else if (orden === 'id_desc') {
                 return Number(b.idPartidos) - Number(a.idPartidos);
             }
-            return diffFecha;
-            
-        } else if (orden === 'fecha_asc') {
-            // Más antiguos primero
-            const diffFecha = new Date(a.fecha) - new Date(b.fecha);
-            if (diffFecha === 0) {
-                // Si la fecha es la misma, el de menor ID (primer añadido) va primero
-                return Number(a.idPartidos) - Number(b.idPartidos);
-            }
-            return diffFecha;
-            
-        } else if (orden === 'id_desc') {
-            // Últimos añadidos
-            return Number(b.idPartidos) - Number(a.idPartidos);
-        }
-        return 0; 
-    });
-}
+            return 0; 
+        });
+    }
 
     function cambiarOrden() {
         paginaActual = 1;
@@ -269,6 +272,7 @@
         const idCompeticion = document.getElementById('filtro-competicion').value;
         const idEquipo = document.getElementById('filtro-equipo').value;
         const fechaFiltro = document.getElementById('filtro-fecha').value;
+        const jornadaFiltro = document.getElementById('filtro-jornada').value.toLowerCase().trim();
 
         const filtrados = todosLosPartidos.filter(partido => {
             const cumpleComp = (idCompeticion === "" || partido.competicion.idCompeticion.toString() === idCompeticion);
@@ -276,8 +280,10 @@
                                    partido.equipoLocal.idEquipos.toString() === idEquipo || 
                                    partido.equipoVisitante.idEquipos.toString() === idEquipo);
             const cumpleFecha = (fechaFiltro === "" || partido.fecha === fechaFiltro);
+            
+            const cumpleJornada = (jornadaFiltro === "" || (partido.jornada && partido.jornada.toString().toLowerCase().includes(jornadaFiltro)));
 
-            return cumpleComp && cumpleEquipo && cumpleFecha;
+            return cumpleComp && cumpleEquipo && cumpleFecha && cumpleJornada;
         });
 
         ordenarLista(filtrados);

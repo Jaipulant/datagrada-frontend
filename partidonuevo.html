@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="config.js"></script>
     <style>
-        .form-control::placeholder {
+        .form-control::placeholder,
+        .ts-control input::placeholder {
             color: #52525b !important; 
             opacity: 0.8 !important;
             font-style: italic;
@@ -62,14 +63,15 @@
                     </div>
                     <div class="col-12 col-md-3">
                         <label class="form-label">Jornada / Fase</label>
-                        <input type="text" id="input-jornada" class="form-control" list="lista-jornadas" placeholder="Ej: 12 o Final" required>
-                        <datalist id="lista-jornadas">
-                            <option value="Fase de Grupos">
-                            <option value="Octavos">
-                            <option value="Cuartos">
-                            <option value="Semifinal">
-                            <option value="Final">
-                        </datalist>
+                        <select id="input-jornada" class="form-select" placeholder="Ej: 12 o Final" required>
+                            <option value="">Ej: 12 o Final</option>
+                            <option value="Fase de Grupos">Fase de Grupos</option>
+                            <option value="1/16 de final">1/16 de final</option>
+                            <option value="1/8 de final">1/8 de final</option>
+                            <option value="1/4 de final">1/4 de final</option>
+                            <option value="Semifinal">Semifinal</option>
+                            <option value="Final">Final</option>
+                        </select>
                     </div>
                     <div class="col-12 col-md-3">
                         <label class="form-label">Fecha</label>
@@ -135,7 +137,8 @@
                                 <label class="form-label">Nombre del Club</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="nombre-equipo" placeholder="Ej: Manchester City" required>
-                                    <button class="btn fw-bold text-white" style="background-color: #f43f5e; border: none;" type="button" id="btn-buscar-escudo" onclick="buscarDatosEquipo()">                                        🔍 Autocompletar
+                                    <button class="btn fw-bold text-white" style="background-color: #f43f5e; border: none;" type="button" id="btn-buscar-escudo" onclick="buscarDatosEquipo()">
+                                        🔍 Autocompletar
                                     </button>
                                 </div>
                                 <div class="form-text text-muted small mt-1">Escribe el nombre y pulsa autocompletar para buscar su escudo y datos oficiales.</div>
@@ -192,6 +195,13 @@
     document.addEventListener("DOMContentLoaded", function() {
         cargarEquipos();
         cargarCompeticiones();
+        
+        // Inicializar el selector de jornada permitiendo texto libre
+        new TomSelect("#input-jornada", { 
+            create: true, 
+            sortField: false, 
+            maxItems: 1 
+        });
     });
 
     function cargarEquipos() {
@@ -399,6 +409,8 @@
                 alert("¡Partido guardado con éxito!");
                 if (buscadorLocal) buscadorLocal.clear();
                 if (buscadorVisitante) buscadorVisitante.clear();
+                
+                // Reiniciar los campos a 0
                 document.getElementById('goles-local').value = 0;
                 document.getElementById('goles-visitante').value = 0;
             } else {
