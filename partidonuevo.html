@@ -142,8 +142,12 @@
                             </div>
                             
                             <div class="mb-4">
-                                <label class="form-label">URL del Escudo (PNG preferible)</label>
-                                <input type="url" class="form-control" id="url-escudo" placeholder="https://ejemplo.com/escudo.png">
+                                <label class="form-label">Escudo del Club (Selecciona una imagen)</label>
+                                <input type="file" class="form-control mb-2" id="file-escudo" accept="image/*">
+                                <input type="url" class="form-control text-muted" id="url-escudo" placeholder="La URL se generará automáticamente" readonly>
+                                <div id="loading-imagen" class="text-primary mt-1 fw-bold" style="display:none; font-size:0.85rem;">
+                                    ⏳ Subiendo imagen...
+                                </div>
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100 py-2 fs-5" style="border-radius: 8px;">
@@ -285,6 +289,7 @@
                 document.getElementById('pais-equipo').value = '';
                 document.getElementById('estadio-equipo').value = '';
                 document.getElementById('url-escudo').value = '';
+                document.getElementById('file-escudo').value = ''; // Limpiamos el input del archivo
                 document.getElementById('imagen-preview').src = escudoPorDefecto;
                 document.getElementById('imagen-preview').style.opacity = '0.5';
                 document.querySelector('.vista-previa-escudo').classList.remove('activa');
@@ -362,7 +367,7 @@
         const url = this.value.trim();
         if (url !== '') {
             imagenPreview.src = url;
-            imagenPreview.style.opacity = '1'; // Se ilumina al poner URL real
+            imagenPreview.style.opacity = '1'; 
             cajaPreview.classList.add('activa'); 
             imagenPreview.onerror = () => {
                 imagenPreview.src = escudoPorDefecto;
@@ -371,9 +376,49 @@
             };
         } else {
             imagenPreview.src = escudoPorDefecto;
-            imagenPreview.style.opacity = '0.5'; // Vuelve a apagarse sutilmente
+            imagenPreview.style.opacity = '0.5'; 
             cajaPreview.classList.remove('activa');
         }
+    });
+
+    // Nuevo evento para la subida de imágenes a ImgBB
+    document.getElementById('file-escudo').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            document.getElementById('url-escudo').value = '';
+            document.getElementById('url-escudo').dispatchEvent(new Event('input'));
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const apiKey = '0a392cb2dae7a05ba4fe4edbb5d25492'; 
+        
+        document.getElementById('loading-imagen').style.display = 'block';
+
+        fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading-imagen').style.display = 'none';
+            if(data.success) {
+                // Rellenamos el input de la URL con el link de la imagen subida
+                const inputUrl = document.getElementById('url-escudo');
+                inputUrl.value = data.data.url;
+                
+                // Disparamos el evento para que tu vista previa se actualice
+                inputUrl.dispatchEvent(new Event('input'));
+            } else {
+                alert('Hubo un error al subir la imagen.');
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading-imagen').style.display = 'none';
+            alert('Fallo de conexión al subir la imagen.');
+        });
     });
 
     function cerrarSesion() {
