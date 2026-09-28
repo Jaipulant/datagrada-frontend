@@ -128,8 +128,7 @@
                                 <label class="form-label">Nombre del Club</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="nombre-equipo" placeholder="Ej: Real Betis" required>
-                                    <button class="btn btn-warning fw-bold text-dark" type="button" id="btn-buscar-escudo" onclick="buscarDatosEquipo()">
-                                        🔍 Autocompletar
+                                    <button class="btn fw-bold text-white" style="background-color: #f43f5e; border: none;" type="button" id="btn-buscar-escudo" onclick="buscarDatosEquipo()">                                        🔍 Autocompletar
                                     </button>
                                 </div>
                                 <div class="form-text text-muted small mt-1">Escribe el nombre y pulsa autocompletar para buscar su escudo y datos oficiales.</div>
@@ -250,52 +249,56 @@
     }
 
     function buscarDatosEquipo() {
-        const nombreInput = document.getElementById('nombre-equipo').value.trim();
-        if (!nombreInput) {
-            alert("Primero escribe el nombre de un equipo para buscarlo.");
-            return;
-        }
-
-        const btn = document.getElementById('btn-buscar-escudo');
-        btn.innerHTML = '⏳ Buscando...';
-        btn.disabled = true;
-
-        fetch(`https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(nombreInput)}`)
-        .then(res => res.json())
-        .then(data => {
-            btn.innerHTML = '🔍 Autocompletar';
-            btn.disabled = false;
-
-            if (data.teams && data.teams.length > 0) {
-                const equipoEncontrado = data.teams[0];
-                
-                if (equipoEncontrado.strTeamBadge) {
-                    const urlInput = document.getElementById('url-escudo');
-                    urlInput.value = equipoEncontrado.strTeamBadge;
-                    urlInput.dispatchEvent(new Event('input')); 
-                }
-
-                const paisInput = document.getElementById('pais-equipo');
-                const estadioInput = document.getElementById('estadio-equipo');
-                
-                if (!paisInput.value && equipoEncontrado.strCountry) {
-                    paisInput.value = equipoEncontrado.strCountry;
-                }
-                if (!estadioInput.value && equipoEncontrado.strStadium) {
-                    estadioInput.value = equipoEncontrado.strStadium;
-                }
-
-            } else {
-                alert("No se ha encontrado el equipo. Puede que tengas que escribir su nombre en inglés (ej: 'Sevilla' -> 'Sevilla FC') o rellenar los datos a mano.");
-            }
-        })
-        .catch(error => {
-            btn.innerHTML = '🔍 Autocompletar';
-            btn.disabled = false;
-            console.error(error);
-            alert("Fallo al conectar con el buscador de escudos.");
-        });
+    const nombreInput = document.getElementById('nombre-equipo').value.trim();
+    if (!nombreInput) {
+        alert("Primero escribe el nombre de un equipo para buscarlo.");
+        return;
     }
+
+    const btn = document.getElementById('btn-buscar-escudo');
+    btn.innerHTML = '⏳ Buscando...';
+    btn.disabled = true;
+
+    fetch(`https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(nombreInput)}`)
+    .then(res => res.json())
+    .then(data => {
+        btn.innerHTML = '🔍 Autocompletar';
+        btn.disabled = false;
+
+        if (data.teams && data.teams.length > 0) {
+            const equipoEncontrado = data.teams[0];
+            
+            // --- EL CAMBIO ESTÁ AQUÍ ---
+            // Buscamos strBadge, strTeamBadge o strTeamLogo para asegurar que pillamos el escudo
+            const urlEscudo = equipoEncontrado.strBadge || equipoEncontrado.strTeamBadge || equipoEncontrado.strTeamLogo;
+            
+            if (urlEscudo) {
+                const urlInput = document.getElementById('url-escudo');
+                urlInput.value = urlEscudo;
+                urlInput.dispatchEvent(new Event('input')); 
+            }
+
+            const paisInput = document.getElementById('pais-equipo');
+            const estadioInput = document.getElementById('estadio-equipo');
+            
+            if (!paisInput.value && equipoEncontrado.strCountry) {
+                paisInput.value = equipoEncontrado.strCountry;
+            }
+            if (!estadioInput.value && equipoEncontrado.strStadium) {
+                estadioInput.value = equipoEncontrado.strStadium;
+            }
+
+        } else {
+            alert("No se ha encontrado el equipo. Puede que tengas que escribir su nombre en inglés (ej: 'Sevilla' -> 'Sevilla FC') o rellenar los datos a mano.");
+        }
+    })
+    .catch(error => {
+        btn.innerHTML = '🔍 Autocompletar';
+        btn.disabled = false;
+        console.error(error);
+        alert("Fallo al conectar con el buscador de escudos.");
+    });
+}
 
     function guardarNuevoEquipo(event) {
         event.preventDefault(); 
