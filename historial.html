@@ -68,8 +68,9 @@
         <div class="d-flex align-items-center gap-2" style="max-width: 300px;">
             <label for="select-orden" class="text-muted small text-nowrap fw-bold">Ordenar:</label>
             <select id="select-orden" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="cambiarOrden()">
-                <option value="antiguos" selected>Más antiguos primero</option>
-                <option value="recientes">Más recientes primero</option>
+                <option value="fecha_desc">Más recientes</option>
+                <option value="fecha_asc" selected>Más antiguos</option>
+                <option value="id_desc">Últimos añadidos</option>
             </select>
         </div>
     </div>
@@ -228,11 +229,14 @@
     function ordenarLista(lista) {
         const orden = document.getElementById('select-orden').value;
         return lista.sort((a, b) => {
-            if (orden === 'recientes') {
-                return Number(b.idPartidos) - Number(a.idPartidos); // Corregido: usa idPartidos
-            } else {
-                return Number(a.idPartidos) - Number(b.idPartidos); // Corregido: usa idPartidos
+            if (orden === 'fecha_desc') {
+                return new Date(b.fecha) - new Date(a.fecha);
+            } else if (orden === 'fecha_asc') {
+                return new Date(a.fecha) - new Date(b.fecha);
+            } else if (orden === 'id_desc') {
+                return Number(b.idPartidos) - Number(a.idPartidos);
             }
+            return 0; 
         });
     }
 
