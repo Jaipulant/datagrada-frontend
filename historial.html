@@ -208,7 +208,7 @@
     function dibujarDesplegableEquipos(listaEquipos) {
         const selectEq = document.getElementById('filtro-equipo');
         if (buscadorEquipoHistorial) buscadorEquipoHistorial.destroy();
-        selectEq.innerHTML = '<option value="">Cualquier equipo</option>'; 
+        selectEq.innerHTML = '<option value="">Equipo</option>'; 
         listaEquipos.forEach(eq => {
             selectEq.innerHTML += `<option value="${eq.idEquipos}">${eq.nombre}</option>`;
         });
