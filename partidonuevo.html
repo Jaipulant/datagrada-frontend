@@ -61,8 +61,15 @@
                         </select>
                     </div>
                     <div class="col-12 col-md-3">
-                        <label class="form-label">Jornada</label>
-                        <input type="text" id="input-jornada" class="form-control" required>
+                        <label class="form-label">Jornada / Fase</label>
+                        <input type="text" id="input-jornada" class="form-control" list="lista-jornadas" placeholder="Ej: 12 o Final" required>
+                        <datalist id="lista-jornadas">
+                            <option value="Fase de Grupos">
+                            <option value="Octavos">
+                            <option value="Cuartos">
+                            <option value="Semifinal">
+                            <option value="Final">
+                        </datalist>
                     </div>
                     <div class="col-12 col-md-3">
                         <label class="form-label">Fecha</label>
@@ -279,8 +286,6 @@
                 const paisInput = document.getElementById('pais-equipo');
                 const estadioInput = document.getElementById('estadio-equipo');
                 
-                // --- EL CAMBIO ESTÁ AQUÍ ---
-                // Ahora actualiza siempre, aunque ya haya algo escrito
                 if (equipoEncontrado.strCountry) {
                     paisInput.value = equipoEncontrado.strCountry;
                 }
