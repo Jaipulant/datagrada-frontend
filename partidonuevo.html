@@ -17,16 +17,6 @@
             opacity: 0.8 !important;
             font-style: italic;
         }
-        .btn-magia {
-            background: linear-gradient(45deg, #f43f5e, #ff7b00);
-            color: white;
-            border: none;
-            transition: transform 0.2s;
-        }
-        .btn-magia:hover {
-            transform: scale(1.02);
-            color: white;
-        }
     </style>
 </head>
 
@@ -65,25 +55,25 @@
             <form id="formulario-partido">
                 
                 <div class="row g-3 mb-3">
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6" id="col-competicion">
                         <label class="form-label">Competición</label>
                         <select id="select-competicion" class="form-select" required>
                             <option value="">Cargando competiciones...</option>
                         </select>
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-3 d-none" id="col-jornada">
                         <label class="form-label">Jornada / Fase</label>
-                        <select id="input-jornada" class="form-select" placeholder="Selecciona competición..." required>
-                            <option value="">Esperando competición...</option>
+                        <select id="input-jornada" class="form-select" required>
+                            <option value="">Selecciona...</option>
                         </select>
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-6" id="col-fecha">
                         <label class="form-label">Fecha</label>
                         <input type="date" id="input-fecha" class="form-control" required>
                     </div>
                 </div>
 
-                <div class="row g-3 align-items-center mb-2 text-center mt-2">
+                <div class="row g-3 align-items-center mb-4 text-center mt-2">
                     <div class="col-12 col-md-4">
                         <label class="form-label">Equipo Local</label>
                         <div class="input-group">
@@ -112,16 +102,7 @@
                     </div>
                 </div>
 
-                <div class="row mb-4 mt-3">
-                    <div class="col-12 text-center">
-                        <button type="button" class="btn btn-magia fw-bold px-4 py-2" id="btn-autocompletar-partido" onclick="autocompletarPartidoDesdeAPI()">
-                            🪄 Autocompletar Resultado y Jornada
-                        </button>
-                        <div class="form-text text-muted small mt-1">Requiere seleccionar equipos y competición.</div>
-                    </div>
-                </div>
-
-                <div class="text-center mt-2">
+                <div class="text-center mt-4">
                     <button type="button" class="btn btn-success px-5 py-2 fs-5 w-100 w-md-auto" onclick="guardarPartido()">Guardar Partido</button>
                 </div>
             </form>
@@ -204,7 +185,7 @@
 
     let buscadorLocal, buscadorVisitante, buscadorCompeticion, selectJornadaTom;
     let todosLosEquipos = [];
-    let todasLasCompeticiones = []; 
+    let todasLasCompeticiones = [];
 
     document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('input-fecha').value = new Date().toISOString().split('T')[0];
@@ -220,36 +201,74 @@
 
         document.getElementById('select-competicion').addEventListener('change', function() {
             const idComp = this.value;
-            if (!idComp) return;
+            const colJornada = document.getElementById('col-jornada');
+            const colComp = document.getElementById('col-competicion');
+            const colFecha = document.getElementById('col-fecha');
 
-            const competicionSeleccionada = todasLasCompeticiones.find(c => c.idCompeticion.toString() === idComp);
-            if (!competicionSeleccionada) return;
+            if (!idComp) {
+                colJornada.classList.add('d-none');
+                colComp.className = 'col-12 col-md-6';
+                colFecha.className = 'col-12 col-md-6';
+                selectJornadaTom.clear();
+                selectJornadaTom.clearOptions();
+                return;
+            }
+
+            colJornada.classList.remove('d-none');
+            colComp.className = 'col-12 col-md-6';
+            colFecha.className = 'col-12 col-md-3';
+            colJornada.className = 'col-12 col-md-3';
+
+            const comp = todasLasCompeticiones.find(c => c.idCompeticion.toString() === idComp);
+            if (!comp) return;
 
             selectJornadaTom.clear();
             selectJornadaTom.clearOptions();
 
-            const tipoCompeticion = competicionSeleccionada.tipo || "";
-            const esLiga = tipoCompeticion.toLowerCase() === 'liga' || 
-                          (!tipoCompeticion && competicionSeleccionada.nombre.toLowerCase().includes('liga'));
+            const tipo = (comp.tipo || "").toLowerCase();
+            const nombre = (comp.nombre || "").toLowerCase();
 
-            if (esLiga) {
-                const jornadas = Array.from({length: 46}, (_, i) => ({
-                    value: (i + 1).toString(), 
-                    text: 'Jornada ' + (i + 1)
-                }));
-                selectJornadaTom.addOption(jornadas);
-                document.querySelector('#input-jornada-ts-control').placeholder = "Nº Jornada...";
+            if (tipo === 'liga') {
+                let totalJornadas = 38;
+                if (nombre.includes('hypermotion')) {
+                    totalJornadas = 42;
+                } else if (nombre.includes('championship')) {
+                    totalJornadas = 46;
+                }
+
+                const opciones = [];
+                for (let i = 1; i <= totalJornadas; i++) {
+                    opciones.push({ value: i.toString(), text: 'Jornada ' + i });
+                }
+                selectJornadaTom.addOption(opciones);
+            } else if (tipo === 'copa' || tipo === 'europa') {
+                selectJornadaTom.addOption([
+                    { value: 'Fase de Liga', text: 'Fase de Liga' },
+                    { value: '1/16 de final', text: '1/16 de final' },
+                    { value: '1/8 de final', text: '1/8 de final' },
+                    { value: '1/4 de final', text: '1/4 de final' },
+                    { value: 'Semifinal', text: 'Semifinal' },
+                    { value: 'Final', text: 'Final' }
+                ]);
+            } else if (tipo === 'selecciones') {
+                selectJornadaTom.addOption([
+                    { value: 'Fase de Grupos', text: 'Fase de Grupos' },
+                    { value: '1/16 de final', text: '1/16 de final' },
+                    { value: '1/8 de final', text: '1/8 de final' },
+                    { value: '1/4 de final', text: '1/4 de final' },
+                    { value: 'Semifinal', text: 'Semifinal' },
+                    { value: 'Final', text: 'Final' }
+                ]);
             } else {
                 selectJornadaTom.addOption([
-                    {value: 'Fase de Grupos', text: 'Fase de Grupos'},
-                    {value: 'Fase de Liga', text: 'Fase de Liga'},
-                    {value: '1/16 de final', text: '1/16 de final'},
-                    {value: '1/8 de final', text: '1/8 de final'},
-                    {value: '1/4 de final', text: '1/4 de final'},
-                    {value: 'Semifinal', text: 'Semifinal'},
-                    {value: 'Final', text: 'Final'}
+                    { value: 'Fase de Grupos', text: 'Fase de Grupos' },
+                    { value: 'Fase de Liga', text: 'Fase de Liga' },
+                    { value: '1/16 de final', text: '1/16 de final' },
+                    { value: '1/8 de final', text: '1/8 de final' },
+                    { value: '1/4 de final', text: '1/4 de final' },
+                    { value: 'Semifinal', text: 'Semifinal' },
+                    { value: 'Final', text: 'Final' }
                 ]);
-                document.querySelector('#input-jornada-ts-control').placeholder = "Fase del torneo...";
             }
         });
     });
@@ -294,7 +313,7 @@
         })
         .then(res => res.json())
         .then(competiciones => {
-            todasLasCompeticiones = competiciones; 
+            todasLasCompeticiones = competiciones;
             
             const selectCompeticion = document.getElementById('select-competicion');
             if(buscadorCompeticion) buscadorCompeticion.destroy();
@@ -307,79 +326,6 @@
         });
     }
 
-    function autocompletarPartidoDesdeAPI() {
-        const idLocal = document.getElementById('select-local').value;
-        const idVisitante = document.getElementById('select-visitante').value;
-        const btn = document.getElementById('btn-autocompletar-partido');
-
-        if (!idLocal || !idVisitante) {
-            alert("⚠️ Selecciona primero el equipo Local y Visitante para buscar el resultado.");
-            return;
-        }
-
-        const equipoLocal = todosLosEquipos.find(e => e.idEquipos.toString() === idLocal);
-        const equipoVisitante = todosLosEquipos.find(e => e.idEquipos.toString() === idVisitante);
-
-        const textoOriginal = btn.innerHTML;
-        btn.innerHTML = '⏳ Buscando partido real...';
-        btn.disabled = true;
-
-        // Formatear nombres para la API (ej: "Real Madrid" -> "Real_Madrid")
-        const nombreLocalAPI = encodeURIComponent(equipoLocal.nombre.replace(/\s+/g, '_'));
-        const nombreVisitanteAPI = encodeURIComponent(equipoVisitante.nombre.replace(/\s+/g, '_'));
-
-        // Llamada real a TheSportsDB buscando el evento "Local vs Visitante"
-        fetch(`https://www.thesportsdb.com/api/v1/json/3/searchevents.php?e=${nombreLocalAPI}_vs_${nombreVisitanteAPI}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.event && data.event.length > 0) {
-                // Filtramos solo los partidos que ya se han jugado (tienen resultado)
-                const partidosJugados = data.event.filter(p => p.intHomeScore !== null);
-                
-                if (partidosJugados.length > 0) {
-                    // Ordenamos por fecha para coger el enfrentamiento más reciente
-                    partidosJugados.sort((a, b) => new Date(b.dateEvent) - new Date(a.dateEvent));
-                    const ultimoPartido = partidosJugados[0];
-
-                    // Autocompletar Goles
-                    document.getElementById('goles-local').value = ultimoPartido.intHomeScore;
-                    document.getElementById('goles-visitante').value = ultimoPartido.intAwayScore;
-                    
-                    // Autocompletar Fecha
-                    if (ultimoPartido.dateEvent) {
-                        document.getElementById('input-fecha').value = ultimoPartido.dateEvent;
-                    }
-
-                    // Autocompletar Jornada
-                    if (ultimoPartido.intRound) {
-                        selectJornadaTom.addOption({value: ultimoPartido.intRound, text: ultimoPartido.intRound});
-                        selectJornadaTom.setValue(ultimoPartido.intRound);
-                    }
-
-                    btn.innerHTML = '✅ ¡Autocompletado con éxito!';
-                    setTimeout(() => {
-                        btn.innerHTML = textoOriginal;
-                        btn.disabled = false;
-                    }, 3000);
-
-                } else {
-                    alert("El partido está en la base de datos pero aún no tiene resultado (quizás no se ha jugado).");
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                }
-            } else {
-                alert("No se ha encontrado este enfrentamiento en TheSportsDB. Revisa que los nombres de los equipos coincidan (ej: 'Sevilla' vs 'Sevilla FC').");
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error("Error al buscar el partido:", error);
-            alert("Hubo un fallo al conectar con la API de resultados.");
-            btn.innerHTML = textoOriginal;
-            btn.disabled = false;
-        });
-    }
     function buscarDatosEquipo() {
         const nombreInput = document.getElementById('nombre-equipo').value.trim();
         if (!nombreInput) {
@@ -399,7 +345,6 @@
 
             if (data.teams && data.teams.length > 0) {
                 const equipoEncontrado = data.teams[0];
-                
                 const urlEscudo = equipoEncontrado.strBadge || equipoEncontrado.strTeamBadge || equipoEncontrado.strTeamLogo;
                 
                 if (urlEscudo) {
@@ -491,7 +436,7 @@
         const golesVisitante = document.getElementById('goles-visitante').value;
         const idVisitante = document.getElementById('select-visitante').value;
 
-        if (!idCompeticion || !fecha || !idLocal || !idVisitante || golesLocal === "" || golesVisitante === "") {
+        if (!idCompeticion || !jornada || !fecha || !idLocal || !idVisitante || golesLocal === "" || golesVisitante === "") {
             alert("Por favor, rellena todos los campos obligatorios.");
             return;
         }
