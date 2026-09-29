@@ -321,35 +321,65 @@
         const equipoVisitante = todosLosEquipos.find(e => e.idEquipos.toString() === idVisitante);
 
         const textoOriginal = btn.innerHTML;
-        btn.innerHTML = '⏳ Buscando partido...';
+        btn.innerHTML = '⏳ Buscando partido real...';
         btn.disabled = true;
 
-        // Simulador temporal del API (borrar y cambiar por fetch real después)
-        setTimeout(() => {
-            const mockDataAPI = {
-                golesLocal: 2,
-                golesVisitante: 1,
-                jornada: "12",
-                fecha: new Date().toISOString().split('T')[0] 
-            };
+        // Formatear nombres para la API (ej: "Real Madrid" -> "Real_Madrid")
+        const nombreLocalAPI = encodeURIComponent(equipoLocal.nombre.replace(/\s+/g, '_'));
+        const nombreVisitanteAPI = encodeURIComponent(equipoVisitante.nombre.replace(/\s+/g, '_'));
 
-            document.getElementById('goles-local').value = mockDataAPI.golesLocal;
-            document.getElementById('goles-visitante').value = mockDataAPI.golesVisitante;
-            
-            if (mockDataAPI.jornada) {
-                selectJornadaTom.addOption({value: mockDataAPI.jornada, text: mockDataAPI.jornada});
-                selectJornadaTom.setValue(mockDataAPI.jornada);
-            }
+        // Llamada real a TheSportsDB buscando el evento "Local vs Visitante"
+        fetch(`https://www.thesportsdb.com/api/v1/json/3/searchevents.php?e=${nombreLocalAPI}_vs_${nombreVisitanteAPI}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.event && data.event.length > 0) {
+                // Filtramos solo los partidos que ya se han jugado (tienen resultado)
+                const partidosJugados = data.event.filter(p => p.intHomeScore !== null);
+                
+                if (partidosJugados.length > 0) {
+                    // Ordenamos por fecha para coger el enfrentamiento más reciente
+                    partidosJugados.sort((a, b) => new Date(b.dateEvent) - new Date(a.dateEvent));
+                    const ultimoPartido = partidosJugados[0];
 
-            btn.innerHTML = '✅ ¡Autocompletado!';
-            setTimeout(() => {
+                    // Autocompletar Goles
+                    document.getElementById('goles-local').value = ultimoPartido.intHomeScore;
+                    document.getElementById('goles-visitante').value = ultimoPartido.intAwayScore;
+                    
+                    // Autocompletar Fecha
+                    if (ultimoPartido.dateEvent) {
+                        document.getElementById('input-fecha').value = ultimoPartido.dateEvent;
+                    }
+
+                    // Autocompletar Jornada
+                    if (ultimoPartido.intRound) {
+                        selectJornadaTom.addOption({value: ultimoPartido.intRound, text: ultimoPartido.intRound});
+                        selectJornadaTom.setValue(ultimoPartido.intRound);
+                    }
+
+                    btn.innerHTML = '✅ ¡Autocompletado con éxito!';
+                    setTimeout(() => {
+                        btn.innerHTML = textoOriginal;
+                        btn.disabled = false;
+                    }, 3000);
+
+                } else {
+                    alert("El partido está en la base de datos pero aún no tiene resultado (quizás no se ha jugado).");
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }
+            } else {
+                alert("No se ha encontrado este enfrentamiento en TheSportsDB. Revisa que los nombres de los equipos coincidan (ej: 'Sevilla' vs 'Sevilla FC').");
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
-            }, 2000);
-
-        }, 1500); 
+            }
+        })
+        .catch(error => {
+            console.error("Error al buscar el partido:", error);
+            alert("Hubo un fallo al conectar con la API de resultados.");
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        });
     }
-
     function buscarDatosEquipo() {
         const nombreInput = document.getElementById('nombre-equipo').value.trim();
         if (!nombreInput) {
