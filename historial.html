@@ -85,9 +85,11 @@
                     </select>
                 </div>
                 
-                <!-- AQUÍ ESTÁ EL NUEVO FILTRO DE JORNADA -->
+                <!-- NUEVO FILTRO DE JORNADA MEJORADO CON SELECT -->
                 <div class="col-12 col-lg-2">
-                    <input type="text" id="filtro-jornada" class="form-control" placeholder="Jornada">
+                    <select id="filtro-jornada" class="form-select">
+                        <option value="">Jornada</option>
+                    </select>
                 </div>
                 
                 <div class="col-12 col-lg-3">
@@ -146,7 +148,7 @@
 
     let todosLosPartidos = [];
     let todosLosEquipos = []; 
-    let buscadorCompeticionHistorial, buscadorEquipoHistorial;
+    let buscadorCompeticionHistorial, buscadorEquipoHistorial, buscadorJornadaHistorial;
     let paginaActual = 1;
     const partidosPorPagina = 20; 
     let listaActualFiltrada = []; 
@@ -156,7 +158,9 @@
         cargarTodosLosPartidos();
 
         document.getElementById('filtro-competicion').addEventListener('change', function() {
-            actualizarDesplegableEquipos(this.value);
+            const idComp = this.value;
+            actualizarDesplegableEquipos(idComp);
+            actualizarDesplegableJornadas(idComp);
         });
     });
 
@@ -216,6 +220,34 @@
         buscadorEquipoHistorial = new TomSelect("#filtro-equipo", { create: false, sortField: { field: "text" } });
     }
 
+    function actualizarDesplegableJornadas(idCompeticionSeleccionada) {
+        let partidosDisponibles = todosLosPartidos;
+        if (idCompeticionSeleccionada !== "") {
+            partidosDisponibles = todosLosPartidos.filter(p => p.competicion.idCompeticion.toString() === idCompeticionSeleccionada);
+        }
+
+        const jornadasUnicas = [...new Set(partidosDisponibles.map(p => p.jornada))].filter(j => j !== null && j !== undefined && j !== '');
+        
+        // Ordenar jornadas de manera inteligente (si son números del 1 al 38 o nombres de eliminatorias)
+        jornadasUnicas.sort((a, b) => {
+            const numA = parseInt(a);
+            const numB = parseInt(b);
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+            return a.toString().localeCompare(b.toString());
+        });
+
+        const selectJornada = document.getElementById('filtro-jornada');
+        if (buscadorJornadaHistorial) buscadorJornadaHistorial.destroy();
+        
+        selectJornada.innerHTML = '<option value="">Jornada</option>';
+        jornadasUnicas.forEach(j => {
+            const textoJornada = isNaN(j) ? j : 'Jornada ' + j;
+            selectJornada.innerHTML += `<option value="${j}">${textoJornada}</option>`;
+        });
+
+        buscadorJornadaHistorial = new TomSelect("#filtro-jornada", { create: false, sortField: { field: "text" } });
+    }
+
     function cargarTodosLosPartidos() {
         fetch(`${API_BASE_URL}/api/partidos`, {
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
@@ -230,6 +262,7 @@
         .then(partidos => {
             if (!partidos) return;
             todosLosPartidos = partidos;
+            actualizarDesplegableJornadas(""); // Inicializar con todas las jornadas al cargar
             aplicarOrdenYFiltros();
         })
         .catch(error => console.error("Error al cargar el historial:", error));
@@ -273,7 +306,7 @@
         const idCompeticion = document.getElementById('filtro-competicion').value;
         const idEquipo = document.getElementById('filtro-equipo').value;
         const fechaFiltro = document.getElementById('filtro-fecha').value;
-        const jornadaFiltro = document.getElementById('filtro-jornada').value.toLowerCase().trim();
+        const jornadaFiltro = document.getElementById('filtro-jornada').value;
 
         const filtrados = todosLosPartidos.filter(partido => {
             const cumpleComp = (idCompeticion === "" || partido.competicion.idCompeticion.toString() === idCompeticion);
@@ -282,7 +315,8 @@
                                    partido.equipoVisitante.idEquipos.toString() === idEquipo);
             const cumpleFecha = (fechaFiltro === "" || partido.fecha === fechaFiltro);
             
-            const cumpleJornada = (jornadaFiltro === "" || (partido.jornada && partido.jornada.toString().toLowerCase().includes(jornadaFiltro)));
+            // Coincidencia exacta de jornada para evitar cruces con números parciales
+            const cumpleJornada = (jornadaFiltro === "" || (partido.jornada !== null && partido.jornada.toString() === jornadaFiltro));
 
             return cumpleComp && cumpleEquipo && cumpleFecha && cumpleJornada;
         });
