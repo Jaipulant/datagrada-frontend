@@ -60,6 +60,19 @@ body {
     color: #ffffff !important; /* BLANCO BRILLANTE PARA TODOS */
 }
 
+/* BLOQUEO DE ALTURA Y EXPANSIÓN FANTASMA EN TOMSELECT */
+.ts-wrapper .ts-control {
+    min-height: 38px !important;
+    max-height: 38px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.ts-wrapper.dropdown-active .ts-dropdown {
+    margin-top: 2px !important;
+}
+
 /* MATAMOS LA OPACIDAD DE LOS TEXTOS FANTASMA (El problema real) */
 .form-control::placeholder,
 .ts-wrapper .ts-control input::placeholder,
@@ -79,6 +92,12 @@ body {
 }
 
 /* Desplegable del buscador */
+.ts-dropdown {
+    background-color: #171717 !important;
+    color: #ffffff !important;
+    border: 1px solid #3f3f46 !important;
+}
+
 .ts-dropdown .active {
     background-color: #f43f5e !important;
     color: #ffffff !important;
