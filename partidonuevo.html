@@ -268,7 +268,8 @@
                     { value: '1/8 de final', text: '1/8 de final' },
                     { value: '1/4 de final', text: '1/4 de final' },
                     { value: 'Semifinal', text: 'Semifinal' },
-                    { value: 'Final', text: 'Final' }
+                    { value: 'Final', text: 'Final' },
+                    {value: 'Amistoso', text: 'Amistoso'}
                 ]);
             }
         });
@@ -405,7 +406,7 @@
             headers: { 
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json' 
-            },
+            }, 
             body: JSON.stringify(nuevoEquipo)
         })
         .then(res => {
@@ -442,7 +443,7 @@
             return;
         }
 
-        if (idLocal === idVisitante) {
+        if (idLocal === idVisitante) {  
             alert("¡Error! El equipo local y visitante no pueden ser el mismo.");
             return;
         }
