@@ -85,7 +85,6 @@
                     </select>
                 </div>
                 
-                <!-- FILTRO DE JORNADA MEJORADO CON SELECT -->
                 <div class="col-12 col-lg-2">
                     <select id="filtro-jornada" class="form-select">
                         <option value="">Jornada</option>
@@ -107,7 +106,6 @@
         </div>
     </div>
 
-    <!-- TABLA PARA PC -->
     <div class="card shadow d-none d-md-block">
         <div class="card-body p-0">
             <table class="table table-hover table-striped text-center align-middle m-0" style="table-layout: fixed;">
@@ -127,7 +125,6 @@
         </div>
     </div>
 
-    <!-- TARJETAS PARA MÓVIL -->
     <div class="d-block d-md-none" id="tabla-partidos-movil">
     </div>
 
@@ -141,10 +138,9 @@
 </div>
 
 <script>
+    // 1. Validación de sesión segura
+    if (!esTokenValido()) throw new Error("Sesión inválida, deteniendo ejecución");
     const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'index.html';
-    }
 
     let todosLosPartidos = [];
     let todosLosEquipos = []; 
@@ -354,7 +350,6 @@
             const escudoVisitante = partido.equipoVisitante.urlEscudo || 'https://via.placeholder.com/32';
             const textoJornada = isNaN(partido.jornada) ? partido.jornada : 'Jornada ' + partido.jornada;
 
-            // 1. FILA PARA PC
             const filaPc = `
                 <tr>
                     <td class="align-middle text-center text-light">${partido.fecha}</td>
@@ -384,7 +379,6 @@
             `;
             tbodyPc.innerHTML += filaPc;
 
-            // 2. TARJETA MÓVIL
             const tarjetaMovil = `
                 <div class="partido-card-movil p-3 mb-3 shadow-sm position-relative">
                     <div class="dropdown position-absolute" style="top: 10px; right: 10px;">
