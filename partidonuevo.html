@@ -340,43 +340,49 @@
         btn.innerHTML = '⏳ Buscando...';
         btn.disabled = true;
 
-        fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.thesportsdb.com/api/v1/json/1/searchteams.php?t=${nombreInput}`)}`)
-        .then(res => res.json())
-        .then(data => {
-            btn.innerHTML = '🔍 Autocompletar';
-            btn.disabled = false;
-
-            if (data.teams && data.teams.length > 0) {
-                const equipoEncontrado = data.teams[0];
-                const urlEscudo = equipoEncontrado.strBadge || equipoEncontrado.strTeamBadge || equipoEncontrado.strTeamLogo;
-                
-                if (urlEscudo) {
-                    const urlInput = document.getElementById('url-escudo');
-                    urlInput.value = urlEscudo;
-                    urlInput.dispatchEvent(new Event('input')); 
-                }
-
-                const paisInput = document.getElementById('pais-equipo');
-                const estadioInput = document.getElementById('estadio-equipo');
-                
-                if (equipoEncontrado.strCountry) {
-                    paisInput.value = equipoEncontrado.strCountry;
-                }
-                if (equipoEncontrado.strStadium) {
-                    estadioInput.value = equipoEncontrado.strStadium;
-                }
-
-            } else {
-                alert("No se ha encontrado el equipo. Puede que tengas que escribir su nombre completo (ej: 'Sevilla' -> 'Sevilla FC' o 'Belgica' -> 'Belgium') o rellenar los datos a mano.");
-            }
+        // 1. Buscamos primero en la Wikipedia en español
+        fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nombreInput)}`)
+        .then(res => {
+            if (!res.ok) throw new Error("No encontrado en español");
+            return res.json();
         })
-        .catch(error => {
-            btn.innerHTML = '🔍 Autocompletar';
-            btn.disabled = false;
-            console.error(error);
-            alert("Fallo al conectar con el buscador de escudos.");
+        .then(data => procesarRespuestaWikipedia(data))
+        .catch(() => {
+            // 2. Si falla en español, intentamos en la Wikipedia en inglés
+            fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nombreInput)}`)
+            .then(res => {
+                if (!res.ok) throw new Error("No encontrado en inglés");
+                return res.json();
+            })
+            .then(data => procesarRespuestaWikipedia(data))
+            .catch(() => {
+                restablecerBoton();
+                alert("No se ha encontrado el escudo automáticamente. Puedes pegar la URL de la imagen a mano.");
+            });
         });
     }
+
+    function procesarRespuestaWikipedia(data) {
+        restablecerBoton();
+
+        // Extraemos la URL de la imagen (escudo)
+        const urlImagen = (data.originalimage && data.originalimage.source) 
+                    || (data.thumbnail && data.thumbnail.source);
+
+        if (urlImagen) {
+            const urlInput = document.getElementById('url-escudo');
+            urlInput.value = urlImagen;
+            urlInput.dispatchEvent(new Event('input')); // Forzamos la vista previa
+        } else {
+            alert("Se encontró el club en Wikipedia pero no tiene imagen de escudo disponible. Introduce la URL a mano.");
+        }
+}
+
+function restablecerBoton() {
+    const btn = document.getElementById('btn-buscar-escudo');
+    btn.innerHTML = '🔍 Autocompletar';
+    btn.disabled = false;
+}
 
     function guardarNuevoEquipo(event) {
         event.preventDefault(); 
