@@ -340,8 +340,7 @@
         btn.innerHTML = '⏳ Buscando...';
         btn.disabled = true;
 
-        fetch(`${API_BASE_URL}/api/equipos/buscar-externo?nombre=${encodeURIComponent(nombreInput)}`, {headers: { 'Authorization': 'Bearer ' + token,'Content-Type': 'application/json'}
-})
+        fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.thesportsdb.com/api/v1/json/1/searchteams.php?t=${nombreInput}`)}`)
         .then(res => res.json())
         .then(data => {
             btn.innerHTML = '🔍 Autocompletar';
