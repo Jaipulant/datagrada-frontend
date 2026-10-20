@@ -340,7 +340,7 @@
         btn.innerHTML = '⏳ Buscando...';
         btn.disabled = true;
 
-        fetch(`https://www.thesportsdb.com/api/v1/json/1/searchteams.php?t=${encodeURIComponent(nombreInput)}`)
+        fetch(`https://corsproxy.io/?${encodeURIComponent(`https://www.thesportsdb.com/api/v1/json/1/searchteams.php?t=${nombreInput}`)}`)
         .then(res => res.json())
         .then(data => {
             btn.innerHTML = '🔍 Autocompletar';
