@@ -330,37 +330,56 @@
     }
 
     function buscarDatosEquipo() {
-        const nombreInput = document.getElementById('nombre-equipo').value.trim();
-        if (!nombreInput) {
-            alert("Primero escribe el nombre de un equipo para buscarlo.");
-            return;
-        }
-
-        const btn = document.getElementById('btn-buscar-escudo');
-        btn.innerHTML = '⏳ Buscando...';
-        btn.disabled = true;
-
-        // 1. Buscamos primero en la Wikipedia en español
-        fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nombreInput)}`)
-        .then(res => {
-            if (!res.ok) throw new Error("No encontrado en español");
-            return res.json();
-        })
-        .then(data => procesarRespuestaWikipedia(data))
-        .catch(() => {
-            // 2. Si falla en español, intentamos en la Wikipedia en inglés
-            fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(nombreInput)}`)
-            .then(res => {
-                if (!res.ok) throw new Error("No encontrado en inglés");
-                return res.json();
-            })
-            .then(data => procesarRespuestaWikipedia(data))
-            .catch(() => {
-                restablecerBoton();
-                alert("No se ha encontrado el escudo automáticamente. Puedes pegar la URL de la imagen a mano.");
-            });
-        });
+    const nombreInput = document.getElementById('nombre-equipo').value.trim();
+    if (!nombreInput) {
+        alert("Primero escribe el nombre de un equipo para buscarlo.");
+        return;
     }
+
+    const btn = document.getElementById('btn-buscar-escudo');
+    btn.innerHTML = '⏳ Buscando...';
+    btn.disabled = true;
+
+    // Pega aquí la clave que has copiado en api-sports.io
+    const apiKey = "TU_CLAVE_AQUI";
+
+    fetch(`https://v3.football.api-sports.io/teams?search=${encodeURIComponent(nombreInput)}`, {
+        method: "GET",
+        headers: {
+            "x-apisports-key": apiKey
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.innerHTML = '🔍 Autocompletar';
+        btn.disabled = false;
+
+        if (data.response && data.response.length > 0) {
+            // Cogemos el primer resultado que coincida
+            const equipo = data.response[0].team;
+            const estadio = data.response[0].venue;
+
+            // Rellenamos el país y el estadio
+            if (equipo.country) document.getElementById('pais-equipo').value = equipo.country;
+            if (estadio.name) document.getElementById('estadio-equipo').value = estadio.name;
+
+            // Inyectamos el escudo PNG
+            if (equipo.logo) {
+                const urlInput = document.getElementById('url-escudo');
+                urlInput.value = equipo.logo;
+                urlInput.dispatchEvent(new Event('input')); // Fuerza a que aparezca en tu vista previa
+            }
+        } else {
+            alert("No se ha encontrado el equipo. Intenta escribir el nombre de otra forma.");
+        }
+    })
+    .catch(error => {
+        btn.innerHTML = '🔍 Autocompletar';
+        btn.disabled = false;
+        console.error("Error en la API:", error);
+        alert("Fallo al conectar con el buscador de escudos.");
+    });
+}
 
     function procesarRespuestaWikipedia(data) {
         restablecerBoton();
