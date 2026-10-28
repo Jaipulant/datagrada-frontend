@@ -103,9 +103,9 @@
                     </div>
                 </div>
                 <!-- BLOQUE DESEMPATE DISCRETO -->
-                <div class="text-center mb-3">
-                    <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none" onclick="toggleDesempate()" style="font-size: 0.85rem;">
-                        + Añadir prórroga o penaltis
+                <div id="contenedor-tiempo-extra" class="text-center mb-3 d-none">
+                    <button type="button" class="btn btn-sm text-muted text-decoration-none" onclick="toggleDesempate()" style="font-size: 0.85rem; border: 1px solid #333; border-radius: 20px; padding: 4px 15px; background: #1e1e1e;">
+                        ⏱️ Tiempo extra
                     </button>
                 </div>
 
@@ -234,12 +234,20 @@
             const colComp = document.getElementById('col-competicion');
             const colFecha = document.getElementById('col-fecha');
 
+            // Capturamos los elementos del tiempo extra
+            const contTiempoExtra = document.getElementById('contenedor-tiempo-extra');
+            const cajaDesempate = document.getElementById('caja-desempate');
+
             if (!idComp) {
                 colJornada.classList.add('d-none');
                 colComp.className = 'col-12 col-md-6';
                 colFecha.className = 'col-12 col-md-6';
                 selectJornadaTom.clear();
                 selectJornadaTom.clearOptions();
+                
+                // Ocultar y resetear
+                contTiempoExtra.classList.add('d-none');
+                cajaDesempate.classList.add('d-none');
                 return;
             }
 
@@ -256,6 +264,17 @@
 
             const tipo = (comp.tipo || "").toLowerCase();
             const nombre = (comp.nombre || "").toLowerCase();
+
+            // LÓGICA DE VISIBILIDAD DE "TIEMPO EXTRA"
+            if (tipo === 'liga') {
+                contTiempoExtra.classList.add('d-none');
+                cajaDesempate.classList.add('d-none');
+                document.getElementById('check-prorroga').checked = false;
+                document.getElementById('check-penaltis').checked = false;
+                document.getElementById('inputs-penaltis').classList.add('d-none');
+            } else {
+                contTiempoExtra.classList.remove('d-none');
+            }
 
             if (tipo === 'liga') {
                 let totalJornadas = 38;

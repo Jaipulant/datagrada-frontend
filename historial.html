@@ -351,11 +351,11 @@
             const textoJornada = isNaN(partido.jornada) ? partido.jornada : 'Jornada ' + partido.jornada;
 
             // 1. GENERAR EL TEXTO DE DESEMPATE PARA PC
-            let textoDesempatePc = '';
+           let textoDesempatePc = '';
             if (partido.huboPenaltis && partido.golesPenaltisLocal !== null && partido.golesPenaltisVisitante !== null) {
-                textoDesempatePc = `<br><small class="text-warning fw-normal" style="font-size: 0.65em;">${partido.golesPenaltisLocal} - ${partido.golesPenaltisVisitante} en penaltis</small>`;
+                textoDesempatePc = `<br><small class="text-warning fw-normal" style="font-size: 0.75em;">(${partido.golesPenaltisLocal}-${partido.golesPenaltisVisitante} pen.)</small>`;
             } else if (partido.huboProrroga) {
-                textoDesempatePc = `<br><small class="text-muted fw-normal" style="font-size: 0.65em;">en la prórroga</small>`;
+                textoDesempatePc = `<br><small class="text-muted fw-normal" style="font-size: 0.75em;">(prórroga)</small>`;
             }
 
             // 2. GENERAR EL TEXTO DE DESEMPATE PARA MÓVIL (aún más corto)
