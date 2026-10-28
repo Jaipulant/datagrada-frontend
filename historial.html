@@ -350,6 +350,22 @@
             const escudoVisitante = partido.equipoVisitante.urlEscudo || 'https://via.placeholder.com/32';
             const textoJornada = isNaN(partido.jornada) ? partido.jornada : 'Jornada ' + partido.jornada;
 
+            // 1. GENERAR EL TEXTO DE DESEMPATE PARA PC
+            let textoDesempatePc = '';
+            if (partido.huboPenaltis && partido.golesPenaltisLocal !== null && partido.golesPenaltisVisitante !== null) {
+                textoDesempatePc = `<br><small class="text-warning fw-normal" style="font-size: 0.65em;">${partido.golesPenaltisLocal} - ${partido.golesPenaltisVisitante} en penaltis</small>`;
+            } else if (partido.huboProrroga) {
+                textoDesempatePc = `<br><small class="text-muted fw-normal" style="font-size: 0.65em;">en la prórroga</small>`;
+            }
+
+            // 2. GENERAR EL TEXTO DE DESEMPATE PARA MÓVIL (aún más corto)
+            let textoDesempateMovil = '';
+            if (partido.huboPenaltis && partido.golesPenaltisLocal !== null && partido.golesPenaltisVisitante !== null) {
+                textoDesempateMovil = `<div class="text-warning mt-1" style="font-size: 0.65rem;">(${partido.golesPenaltisLocal}-${partido.golesPenaltisVisitante} pen.)</div>`;
+            } else if (partido.huboProrroga) {
+                textoDesempateMovil = `<div class="text-muted mt-1" style="font-size: 0.65rem;">(prórroga)</div>`;
+            }
+
             const filaPc = `
                 <tr>
                     <td class="align-middle text-center text-light">${partido.fecha}</td>
@@ -358,8 +374,9 @@
                         ${partido.equipoLocal.nombre}
                         <img src="${escudoLocal}" alt="Local" class="ms-2" style="width: 35px; height: 35px; object-fit: contain;">
                     </td>
-                    <td class="fs-5 text-primary align-middle px-2 text-center" style="white-space: nowrap;">
+                    <td class="fs-5 text-primary align-middle px-2 text-center" style="white-space: nowrap; line-height: 1.1;">
                         ${partido.golesLocal} - ${partido.golesVisitante}
+                        ${textoDesempatePc}
                     </td>
                     <td class="fw-bold text-start align-middle text-light">
                         <img src="${escudoVisitante}" alt="Visitante" class="me-2" style="width: 35px; height: 35px; object-fit: contain;">
@@ -402,8 +419,12 @@
                             <img src="${escudoLocal}" alt="Local" style="width: 24px; height: 24px; object-fit: contain; flex-shrink: 0;">
                         </div>
 
-                        <div class="fs-5 fw-bold px-2 py-1 rounded text-center flex-shrink-0" style="background-color: #111; color: #ffd32a; width: 85px; letter-spacing: 1px;">
-                            ${partido.golesLocal} - ${partido.golesVisitante}
+                        <!-- SECCIÓN DEL RESULTADO ADAPTADA -->
+                        <div class="d-flex flex-column align-items-center flex-shrink-0">
+                            <div class="fs-5 fw-bold px-2 py-1 rounded text-center" style="background-color: #111; color: #ffd32a; min-width: 85px; letter-spacing: 1px;">
+                                ${partido.golesLocal} - ${partido.golesVisitante}
+                            </div>
+                            ${textoDesempateMovil}
                         </div>
 
                         <div class="d-flex align-items-center justify-content-start text-start gap-1" style="flex: 1 1 0; min-width: 0;">

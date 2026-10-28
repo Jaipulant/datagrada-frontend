@@ -102,7 +102,37 @@
                         </div>
                     </div>
                 </div>
+                <!-- BLOQUE DESEMPATE DISCRETO -->
+                <div class="text-center mb-3">
+                    <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none" onclick="toggleDesempate()" style="font-size: 0.85rem;">
+                        + Añadir prórroga o penaltis
+                    </button>
+                </div>
 
+                <div id="caja-desempate" class="d-none p-3 mb-4 mx-auto" style="background-color: #1e1e1e; border: 1px dashed #3f3f46; border-radius: 8px; max-width: 400px;">
+                    <div class="d-flex justify-content-center gap-4 mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="check-prorroga">
+                            <label class="form-check-label text-light small" for="check-prorroga">Prórroga</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="check-penaltis" onchange="toggleInputsPenaltis()">
+                            <label class="form-check-label text-light small" for="check-penaltis">Penaltis</label>
+                        </div>
+                    </div>
+
+                    <div id="inputs-penaltis" class="row justify-content-center d-none g-2 mt-1">
+                        <div class="col-5">
+                            <label class="form-label text-muted" style="font-size: 0.75rem;">Penaltis Local</label>
+                            <input type="number" id="penaltis-local" class="form-control text-center p-1 bg-dark text-light border-secondary" min="0">
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label text-muted" style="font-size: 0.75rem;">Penaltis Visit.</label>
+                            <input type="number" id="penaltis-visitante" class="form-control text-center p-1 bg-dark text-light border-secondary" min="0">
+                        </div>
+                    </div>
+                </div>
+                <!-- FIN BLOQUE DESEMPATE -->
                 <div class="text-center mt-4">
                     <button type="button" class="btn btn-success px-5 py-2 fs-5 w-100 w-md-auto" onclick="guardarPartido()">Guardar Partido</button>
                 </div>
@@ -463,7 +493,14 @@ function restablecerBoton() {
         const golesLocal = document.getElementById('goles-local').value;
         const golesVisitante = document.getElementById('goles-visitante').value;
         const idVisitante = document.getElementById('select-visitante').value;
+        
+        // NUEVAS VARIABLES DE DESEMPATE
+        const checkProrroga = document.getElementById('check-prorroga').checked;
+        const checkPenaltis = document.getElementById('check-penaltis').checked;
+        const pLocal = document.getElementById('penaltis-local').value;
+        const pVisitante = document.getElementById('penaltis-visitante').value;
 
+        // Validaciones anteriores que ya tienes...
         if (!idCompeticion || !jornada || !fecha || !idLocal || !idVisitante || golesLocal === "" || golesVisitante === "") {
             alert("Por favor, rellena todos los campos obligatorios.");
             return;
@@ -474,6 +511,7 @@ function restablecerBoton() {
             return;
         }
 
+        // OBJETO ACTUALIZADO
         const nuevoPartido = {
             fecha: fecha,
             jornada: jornada,
@@ -481,7 +519,11 @@ function restablecerBoton() {
             golesVisitante: parseInt(golesVisitante),
             competicion: { idCompeticion: parseInt(idCompeticion) },
             equipoLocal: { idEquipos: parseInt(idLocal) },
-            equipoVisitante: { idEquipos: parseInt(idVisitante) }
+            equipoVisitante: { idEquipos: parseInt(idVisitante) },
+            huboProrroga: checkProrroga,
+            huboPenaltis: checkPenaltis,
+            golesPenaltisLocal: checkPenaltis && pLocal !== "" ? parseInt(pLocal) : null,
+            golesPenaltisVisitante: checkPenaltis && pVisitante !== "" ? parseInt(pVisitante) : null
         };
 
         fetch(`${API_BASE_URL}/api/partidos`, {
@@ -536,6 +578,16 @@ function restablecerBoton() {
         }
     });
 
+    function toggleDesempate() {
+        document.getElementById('caja-desempate').classList.toggle('d-none');
+    }
+
+    function toggleInputsPenaltis() {
+        const check = document.getElementById('check-penaltis').checked;
+        const cajaInputs = document.getElementById('inputs-penaltis');
+        if(check) cajaInputs.classList.remove('d-none');
+        else cajaInputs.classList.add('d-none');
+    }
     function cerrarSesion() {
         localStorage.removeItem('token'); 
         window.location.href = 'index.html'; 
